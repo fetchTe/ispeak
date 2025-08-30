@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from typing import Protocol
 
 from RealtimeSTT import AudioToTextRecorder
@@ -12,12 +10,15 @@ class AudioRecorder(Protocol):
     def start(self) -> None:
         """Start recording audio"""
         ...
+
     def stop(self) -> None:
         """Stop recording audio"""
         ...
+
     def text(self) -> str:
         """Get transcribed text from recording"""
         ...
+
     def shutdown(self) -> None:
         """Shutdown recorder and cleanup resources"""
         ...
@@ -57,7 +58,8 @@ class RealtimeSTTRecorder:
         self._recorder.stop()
 
     def text(self) -> str:
-        """Get transcribed text from recording
+        """
+        Get transcribed text from recording
 
         Returns:
             Transcribed text from the last recording session
@@ -72,12 +74,11 @@ class RealtimeSTTRecorder:
             try:
                 self._recorder.shutdown()
             except Exception:
-                # Ignore shutdown errors as they're often harmless
+                # ignore shutdown errors as they're often harmless
                 pass
             finally:
                 self._recorder = None
 
     def __del__(self) -> None:
-        """Ensure cleanup on deletion"""
+        # ensure cleanup on deletion
         self.shutdown()
-
