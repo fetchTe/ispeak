@@ -13,16 +13,16 @@ from .config import VALID_MODELS, ConfigManager
 from .core import VoiceInput, key_to_str
 
 
-def configure_voice() -> None:
+def setup_voice() -> None:
     """Interactive configuration for voice settings"""
     console = Console()
     config_manager = ConfigManager()
     config = config_manager.load_config()
-    console.print("\n[bold][red]◉[/red] [green]Claude Speak Configuration[/green][/bold]")
+    console.print("\n[bold][red]◉[/red] [green]Code Speak Configuration[/green][/bold]")
 
     # configure push-to-talk key
     console.print(
-        f"\nCurrent PTT (push-to-talk) key: [yellow]{config.claude_speak.push_to_talk_key}[/yellow]"
+        f"\nCurrent PTT (push-to-talk) key: [yellow]{config.code_speak.push_to_talk_key}[/yellow]"
     )
     console.print("Press your desired PTT key (or Enter to keep current)...")
 
@@ -39,16 +39,16 @@ def configure_voice() -> None:
     listener.join()  # wait for key press
 
     if captured_key:
-        config.claude_speak.push_to_talk_key = captured_key
+        config.code_speak.push_to_talk_key = captured_key
 
     # configure recording indicator
-    recording_indicator = config.claude_speak.recording_indicator
+    recording_indicator = config.code_speak.recording_indicator
     console.print(f"\nRecording indicator character: [yellow]{recording_indicator}[/yellow]")
     new_indicator = Prompt.ask(
         "Enter new indicator (or press Enter to keep current)",
         default=recording_indicator,
     )
-    config.claude_speak.recording_indicator = new_indicator
+    config.code_speak.recording_indicator = new_indicator
 
     # configure language
     console.print(f"\nLanguage (current: [yellow]{config.realtime_stt.language}[/yellow]):")
@@ -75,8 +75,8 @@ def configure_voice() -> None:
     try:
         config_manager.save_config(config)
         console.print(f"\n[green]✓ Configuration saved to {config_manager.config_path}[/green]")
-        console.print(f"  PTT Key  : [blue]{config.claude_speak.push_to_talk_key}[/blue]")
-        console.print(f"  Indicator: [blue]{config.claude_speak.recording_indicator}[/blue]")
+        console.print(f"  PTT Key  : [blue]{config.code_speak.push_to_talk_key}[/blue]")
+        console.print(f"  Indicator: [blue]{config.code_speak.recording_indicator}[/blue]")
         console.print(f"  Language : [blue]{config.realtime_stt.language}[/blue]")
         console.print(f"  Model    : [blue]{config.realtime_stt.model}[/blue]\n")
 
@@ -100,7 +100,7 @@ def test_voice() -> None:
         voice_input.start(handle_test_text)
 
         console.print("\n[yellow][bold]Instructions (ctrl+c to stop test)[/bold][/yellow]")
-        console.print(f"[yellow]  1. Press your PTT key {voice_input.config.claude_speak.push_to_talk_key}[/yellow]")
+        console.print(f"[yellow]  1. Press your PTT key {voice_input.config.code_speak.push_to_talk_key}[/yellow]")
         console.print("[yellow]  2. Speak[/yellow]")
         console.print("[yellow]  3. Press your PTT key again[/yellow]")
         console.print("[yellow]  4. If successful, the transcribed text should then be displayed[/yellow]\n")
@@ -132,7 +132,7 @@ def show_config() -> None:
         # convert to JSON for display
         config_dict = {
             "realtime_stt": config.realtime_stt.__dict__,
-            "claude_speak": config.claude_speak.__dict__,
+            "code_speak": config.code_speak.__dict__,
         }
 
         console.print(
@@ -145,19 +145,20 @@ def show_config() -> None:
         sys.exit(1)
 
 
-def run_with_claude(claude_args: list) -> int:
+def run_with_ai_tool(ai_args: list, bin_override: str | None = None) -> int:
     """
-    Run claude with voice integration
+    Run AI tool with voice integration
 
     Args:
-        claude_args: Arguments to pass to claude command.
+        ai_args: Arguments to pass to AI tool command.
+        bin_override: Override executable from command line.
 
     Returns:
-        Exit code from claude execution.
+        Exit code from AI tool execution.
     """
     console = Console()
 
-    console.print("\n[bold][red]◉[/red] [yellow]Claude Speak Init[/yellow][/bold]\n")
+    console.print("\n[bold][red]◉[/red] [yellow]Code Speak Init[/yellow][/bold]\n")
 
     voice_enabled = False
     voice_input = None
@@ -181,9 +182,13 @@ def run_with_claude(claude_args: list) -> int:
         console.print(f"[yellow]Could not start voice input: {e}[/yellow]")
         console.print("[yellow]Continuing without voice support...[/yellow]")
 
+    cmd = []
     try:
-        # build command and run claude
-        cmd = ["claude", *claude_args]
+        # build command and run AI tool
+        config_manager = ConfigManager()
+        config = config_manager.load_config()
+        executable = bin_override or config.code_speak.binary
+        cmd = [executable, *ai_args]
         console.print("\n[green][bold]> {}[/green]".format(" ".join(cmd)))
         result = subprocess.run(cmd)
         return_code = result.returncode
@@ -192,11 +197,12 @@ def run_with_claude(claude_args: list) -> int:
         return_code = 0
     except FileNotFoundError:
         console.print(
-            "[red]Error: 'claude' command not found. Make sure Claude Code is installed.[/red]"
+            f"[red]Error: '{cmd[0] if cmd else 'AI tool'}' command not found." +
+            " Make sure it is installed and in PATH.[/red]"
         )
         return_code = 1
     except Exception as e:
-        console.print(f"[red]Error running Claude: {e}[/red]")
+        console.print(f"[red]Error running AI tool: {e}[/red]")
         return_code = 1
     finally:
         # clean up voice input
@@ -212,33 +218,34 @@ def run_with_claude(claude_args: list) -> int:
 def main() -> int:
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="Claude Code with Voice Input",
-        add_help=False,  # we'll handle help ourselves to pass it to claude
+        description="AI Code Generation Tools with Voice Input",
+        add_help=False,  # we'll handle help ourselves
     )
 
     # our specific arguments
-    parser.add_argument("--configure-voice", action="store_true", help="Configure voice settings")
-    parser.add_argument("--test-voice", action="store_true", help="Test voice input functionality")
-    parser.add_argument("--show-config", action="store_true", help="Show current configuration")
+    parser.add_argument("-b", "--binary", help="AI code generation executable (default from config)")
+    parser.add_argument("-s", "--setup", action="store_true", help="Configure voice settings")
+    parser.add_argument("-t", "--test", action="store_true", help="Test voice input functionality")
+    parser.add_argument("-c", "--config", action="store_true", help="Show current configuration")
 
-    # parse known args to separate ours from claude's
-    our_args, claude_args = parser.parse_known_args()
+    # parse known args to separate ours from AI tool's
+    our_args, ai_args = parser.parse_known_args()
 
     # handle our specific commands
-    if our_args.configure_voice:
-        configure_voice()
+    if our_args.setup:
+        setup_voice()
         return 0
 
-    if our_args.test_voice:
+    if our_args.test:
         test_voice()
         return 0
 
-    if our_args.show_config:
+    if our_args.config:
         show_config()
         return 0
 
-    # if no specific command, run with claude integration
-    return run_with_claude(claude_args)
+    # if no specific command, run with AI tool integration
+    return run_with_ai_tool(ai_args, our_args.binary)
 
 
 if __name__ == "__main__":

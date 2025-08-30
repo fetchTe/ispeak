@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# get current directory (where this script is located)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# run code_speak interactive mode
+if [ -d "$SCRIPT_DIR/.venv/bin/python" ]; then
+  "$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/main.py" "$@"
+  else
+  uv run "$SCRIPT_DIR/main.py" "$@"
+fi

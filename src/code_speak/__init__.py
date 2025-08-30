@@ -1,11 +1,9 @@
 """
-Claude Speak - Speech-to-text for Claude Code
-
-A lightweight, low-latency speech-to-text library that provides seamless
-voice input integration with Claude Code.
+code_speak - A speech-to-text library that provides seamless voice input integration
+with AI cli's: claude code, codex, aider, and the like
 """
 
-from .config import AppConfig, ClaudeSpeakConfig, ConfigManager, RealtimeSTTConfig
+from .config import AppConfig, CodeSpeakConfig, ConfigManager, RealtimeSTTConfig
 from .core import TextProcessor, VoiceInput
 from .recorder import AudioRecorder, RealtimeSTTRecorder
 
@@ -13,7 +11,7 @@ __version__ = "0.1.0"
 __all__ = [
     "AppConfig",
     "AudioRecorder",
-    "ClaudeSpeakConfig",
+    "CodeSpeakConfig",
     "ConfigManager",
     "RealtimeSTTConfig",
     "RealtimeSTTRecorder",

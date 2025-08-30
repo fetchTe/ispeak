@@ -25,9 +25,9 @@ class RealtimeSTTConfig:
 
     - NOTE: None -> RealtimeSTT default
     - NOTE: intentionally excluded wake word activation in favor of a hotkey-driven
-    workflow but it's do-able, the only real hitch is implementing a way to steal/change
-    the focus from the active window to the claude code cli/terminal - in x11,
-    this is pretty trivial with xdotool, but in wayland it's a bit more complicated
+            workflow but it's do-able, the only real hitch is implementing a way
+            to steal/change the focus from the active window to the cli/terminal -
+            in x11 it's trivial with xdotool, but in wayland/ios it's best of luck!
     """
     # model and computation settings
     model: str | None = None
@@ -119,9 +119,11 @@ class RealtimeSTTConfig:
 
 
 @dataclass
-class ClaudeSpeakConfig:
-    """Configuration for claude-speak specific settings"""
+class CodeSpeakConfig:
+    """Configuration for code-speak specific settings"""
 
+    # default executable for AI code generation
+    binary: str = "claude"
     push_to_talk_key: str = "right_shift"
     recording_indicator: str = ";"
     delete_keywords: list[str] = None
@@ -141,12 +143,12 @@ class AppConfig:
     """Main application configuration"""
 
     realtime_stt: RealtimeSTTConfig
-    claude_speak: ClaudeSpeakConfig
+    code_speak: CodeSpeakConfig
 
     @classmethod
     def default(cls) -> "AppConfig":
         """Create default configuration"""
-        return cls(realtime_stt=RealtimeSTTConfig(), claude_speak=ClaudeSpeakConfig())
+        return cls(realtime_stt=RealtimeSTTConfig(), code_speak=CodeSpeakConfig())
 
 
 class ConfigManager:
@@ -157,22 +159,22 @@ class ConfigManager:
         Initialize configuration manager
 
         Args:
-            config_path: defaults to CLAUDE_SPEAK_CONFIG env var,
-                        then ~/.claude/claude_speak.json, then ./claude_speak.json
+            config_path: defaults to CODE_SPEAK_CONFIG env var,
+                        then ~/.config/code_speakcode_speak.json, then ./code_speak.json
         """
         if config_path is None:
             # check environment variable first
-            env_config_path = os.getenv("CLAUDE_SPEAK_CONFIG")
+            env_config_path = os.getenv("CODE_SPEAK_CONFIG")
             if env_config_path:
                 config_path = Path(env_config_path)
             else:
-                # check default .claude directory
-                claude_config_path = Path.home() / ".claude" / "claude_speak.json"
-                if claude_config_path.exists():
-                    config_path = claude_config_path
+                # check default config directory
+                default_config_path = Path.home() / ".config" / "code_speak" / "code_speak.json"
+                if default_config_path.exists():
+                    config_path = default_config_path
                 else:
                     # fallback to current directory
-                    config_path = Path("./claude_speak.json").resolve()
+                    config_path = Path("./code_speak.json").resolve()
         self.config_path = config_path
 
     def load_config(self) -> AppConfig:
@@ -200,11 +202,11 @@ class ConfigManager:
             realtime_stt = RealtimeSTTConfig(**known_config)
             realtime_stt._extra_config = extra_config
 
-            # parse ClaudeSpeak config
-            claude_speak_data = data.get("claude_speak", {})
-            claude_speak = ClaudeSpeakConfig(**claude_speak_data)
+            # parse CodeSpeak config
+            code_speak_data = data.get("code_speak", {})
+            code_speak = CodeSpeakConfig(**code_speak_data)
 
-            return AppConfig(realtime_stt=realtime_stt, claude_speak=claude_speak)
+            return AppConfig(realtime_stt=realtime_stt, code_speak=code_speak)
         except (json.JSONDecodeError, TypeError, KeyError) as e:
             # on any configuration error, return default and warn
             print(f"Warning: Failed to load configuration from {self.config_path}: {e}")
@@ -230,7 +232,7 @@ class ConfigManager:
 
         data = {
             "realtime_stt": realtime_stt_dict,
-            "claude_speak": asdict(config.claude_speak),
+            "code_speak": asdict(config.code_speak),
         }
 
         with open(self.config_path, "w") as f:
@@ -246,10 +248,10 @@ class ConfigManager:
         """
         errors = []
 
-        # validate claude_speak config
-        if not config.claude_speak.push_to_talk_key:
+        # validate code_speak config
+        if not config.code_speak.push_to_talk_key:
             errors.append("push_to_talk_key cannot be empty")
-        if not config.claude_speak.recording_indicator:
+        if not config.code_speak.recording_indicator:
             errors.append("recording_indicator cannot be empty")
 
         # validate RealtimeSTT config

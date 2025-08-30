@@ -54,7 +54,7 @@ class TextProcessor:
             return text
         processed = text
         # strip probs not needed in most/all cases
-        if self.config.claude_speak.strip:
+        if self.config.code_speak.strip:
             processed = processed.strip()
         return processed
 
@@ -71,12 +71,12 @@ class TextProcessor:
         if normalized.endswith("."):
             normalized = normalized[:-1]
         return normalized in [
-            keyword.lower() for keyword in self.config.claude_speak.delete_keywords
+            keyword.lower() for keyword in self.config.code_speak.delete_keywords
         ]
 
 
 class VoiceInput:
-    """Main voice input handler for Claude Code"""
+    """Main voice input handler for AI code generation tools"""
 
     def __init__(self) -> None:
         # load configuration
@@ -125,10 +125,10 @@ class VoiceInput:
         self.on_text = on_text
 
         # show startup message
-        self.console.print("\n[bold][red]◉[/red] [green]Claude Speak Active[/green][/bold]")
+        self.console.print("\n[bold][red]◉[/red] [green]Code Speak Active[/green][/bold]")
         self.console.print(f"[blue]  Model       : {self.config.realtime_stt.model}[/blue]")
         self.console.print(f"[blue]  Language    : {self.config.realtime_stt.language or 'auto'}[/blue]")
-        self.console.print(f"[blue]  Push-to-Talk: {self.config.claude_speak.push_to_talk_key}[/blue]")
+        self.console.print(f"[blue]  Push-to-Talk: {self.config.code_speak.push_to_talk_key}[/blue]")
 
         # start keyboard listener for push-to-talk
         self.listener = pynput.keyboard.Listener(on_press=self._on_key_press)
@@ -165,7 +165,7 @@ class VoiceInput:
         time.sleep(0.2)
 
         # type recording indicator
-        pyautogui.typewrite(self.config.claude_speak.recording_indicator)
+        pyautogui.typewrite(self.config.code_speak.recording_indicator)
 
         # start recorder
         try:
@@ -217,7 +217,7 @@ class VoiceInput:
             # calculate number of characters to delete (including the trailing space)
             chars_to_delete = len(last_text) + 1
 
-            if self.config.claude_speak.fast_delete:
+            if self.config.code_speak.fast_delete:
                 # use array of backspace keys for faster deletion
                 backspace_keys = ["backspace"] * chars_to_delete
                 pyautogui.press(backspace_keys)
@@ -243,7 +243,7 @@ class VoiceInput:
 
         # check if it's the push-to-talk key
         key_str = key_to_str(key).lower()
-        ptt_key = self.config.claude_speak.push_to_talk_key.lower()
+        ptt_key = self.config.code_speak.push_to_talk_key.lower()
 
         if key_str == ptt_key:
             if self.recording:

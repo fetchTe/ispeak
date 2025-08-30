@@ -1,5 +1,5 @@
 {
-  "claude_speak": {
+  "code_speak": {
     "push_to_talk_key": "right_shift",
     "recording_indicator": ";",
     "delete_keywords": ["delete last", "undo last"]
