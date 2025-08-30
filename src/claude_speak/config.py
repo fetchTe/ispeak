@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
-
 import json
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
 
@@ -22,90 +20,107 @@ VALID_MODELS = [
 
 @dataclass
 class RealtimeSTTConfig:
-    """Configuration for RealtimeSTT settings
-    NOTE: intentionally excluded wake word activation in favor of a hotkey-driven
+    """
+    Configuration for RealtimeSTT settings
+
+    - NOTE: None -> RealtimeSTT default
+    - NOTE: intentionally excluded wake word activation in favor of a hotkey-driven
     workflow but it's do-able, the only real hitch is implementing a way to steal/change
     the focus from the active window to the claude code cli/terminal - in x11,
     this is pretty trivial with xdotool, but in wayland it's a bit more complicated
     """
-
-    # Model and computation settings
-    model: str = "base"
+    # model and computation settings
+    model: str | None = None
     download_root: str | None = None
-    language: str = "en"
-    compute_type: str = "default"
-    device: str = "cuda"
-    gpu_device_index: int = 0
-    batch_size: int = 16
+    language: str | None = None
+    compute_type: str | None = None
+    device: str | None = None
+    gpu_device_index: int | None = None
+    batch_size: int | None = None
 
-    # Audio input settings
-    input_device_index: int = 0
-    use_microphone: bool = True
-    sample_rate: int = 16000
-    buffer_size: int = 512
+    # audio input settings
+    input_device_index: int | None = None
+    use_microphone: bool | None = None
+    sample_rate: int | None = None
+    buffer_size: int | None = None
 
-    # Text processing settings
-    ensure_sentence_starting_uppercase: bool = True
-    ensure_sentence_ends_with_period: bool = True
-    normalize_audio: bool = False
+    # text processing settings
+    ensure_sentence_starting_uppercase: bool | None = None
+    ensure_sentence_ends_with_period: bool | None = None
+    normalize_audio: bool | None = None
 
-    # Realtime transcription settings
-    enable_realtime_transcription: bool = False
-    use_main_model_for_realtime: bool = False
-    realtime_model_type: str = "tiny"
-    realtime_processing_pause: float = 0.1
-    init_realtime_after_seconds: float = 0.2
-    realtime_batch_size: int = 16
+    # realtime transcription settings
+    enable_realtime_transcription: bool | None = None
+    use_main_model_for_realtime: bool | None = None
+    realtime_model_type: str | None = None
+    realtime_processing_pause: float | None = None
+    init_realtime_after_seconds: float | None = None
+    realtime_batch_size: int | None = None
 
-    # Voice Activity Detection (VAD) settings
-    silero_sensitivity: float = 0.5
-    silero_use_onnx: bool = True
-    silero_deactivity_detection: bool = False
-    webrtc_sensitivity: int = 3
-    faster_whisper_vad_filter: bool = True
+    # voice Activity Detection (VAD) settings
+    silero_sensitivity: float | None = None
+    silero_use_onnx: bool | None = None
+    silero_deactivity_detection: bool | None = None
+    webrtc_sensitivity: int | None = None
+    faster_whisper_vad_filter: bool | None = None
 
-    # Recording timing settings
-    post_speech_silence_duration: float = 0.7
-    min_gap_between_recordings: float = 1.0
-    min_length_of_recording: float = 1.0
-    pre_recording_buffer_duration: float = 0.2
-    early_transcription_on_silence: int = 0
+    # recording timing settings
+    post_speech_silence_duration: float | None = None
+    min_gap_between_recordings: float | None = None
+    min_length_of_recording: float | None = None
+    pre_recording_buffer_duration: float | None = None
+    early_transcription_on_silence: int | None = None
 
-    # Transcription settings
-    beam_size: int = 5
-    beam_size_realtime: int = 3
+    # transcription settings
+    beam_size: int | None = None
+    beam_size_realtime: int | None = None
     initial_prompt: str | None = None
     initial_prompt_realtime: str | None = None
     suppress_tokens: list[int] | None = None
 
-    # Performance and debug settings
-    print_transcription_time: bool = False
-    spinner: bool = False
-    level: int = 30  # logging.WARNING
-    allowed_latency_limit: int = 100
-    handle_buffer_overflow: bool = True
-    no_log_file: bool = False
-    use_extended_logging: bool = False
-    debug_mode: bool = False
-    start_callback_in_new_thread: bool = False
+    # performance and debug settings
+    print_transcription_time: bool | None = None
+    spinner: bool | None = None
+    level: int | None = None
+    allowed_latency_limit: int | None = None
+    handle_buffer_overflow: bool | None = None
+    no_log_file: bool | None = None
+    use_extended_logging: bool | None = None
+    debug_mode: bool | None = None
+    start_callback_in_new_thread: bool | None = None
+
+    # store extra configuration keys not defined in dataclass
+    _extra_config: dict[str, Any] = None
 
     def __post_init__(self) -> None:
-        """Set default values for complex fields."""
+        # set default values for complex fields
         if self.suppress_tokens is None:
             self.suppress_tokens = [-1]
+        if self._extra_config is None:
+            self._extra_config = {}
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for RealtimeSTT initialization."""
+        # convert to dictionary for RealtimeSTT initialization
         config = asdict(self)
-        # Handle empty language for auto-detection
-        if config["language"] == "auto":
+        # remove our internal _extra_config field from the output
+        config.pop("_extra_config", None)
+
+        # remove None values to let RealtimeSTT use its defaults
+        config = {k: v for k, v in config.items() if v is not None}
+
+        # handle empty language for auto-detection
+        if config.get("language") == "auto":
             config["language"] = ""
+
+        # add any extra configuration keys
+        config.update(self._extra_config)
+
         return config
 
 
 @dataclass
 class ClaudeSpeakConfig:
-    """Configuration for claude-speak specific settings."""
+    """Configuration for claude-speak specific settings"""
 
     push_to_talk_key: str = "right_shift"
     recording_indicator: str = ";"
@@ -114,51 +129,53 @@ class ClaudeSpeakConfig:
     strip: bool = True
 
     def __post_init__(self) -> None:
-        """Set default delete keywords if not provided."""
+        # set default delete keywords if not provided
         if self.delete_keywords is None:
-            self.delete_keywords = ["delete", "delete last", "delete last input"]
+            self.delete_keywords = ["delete last", "undo last"]
 
 
 @dataclass
 class AppConfig:
-    """Main application configuration."""
+    """Main application configuration"""
 
     realtime_stt: RealtimeSTTConfig
     claude_speak: ClaudeSpeakConfig
 
     @classmethod
     def default(cls) -> "AppConfig":
-        """Create default configuration."""
+        """Create default configuration"""
         return cls(realtime_stt=RealtimeSTTConfig(), claude_speak=ClaudeSpeakConfig())
 
 
 class ConfigManager:
-    """Manages loading, saving, and validation of configuration."""
+    """Manages loading, saving, and validation of configuration"""
 
     def __init__(self, config_path: Path | None = None) -> None:
-        """Initialize configuration manager.
+        """
+        Initialize configuration manager
 
         Args:
-            config_path: Path to configuration file. Defaults to CLAUDE_SPEAK_CONFIG env var,
+            config_path: defaults to CLAUDE_SPEAK_CONFIG env var,
                         then ~/.claude/claude_speak.json, then ./claude_speak.json
         """
         if config_path is None:
-            # Check environment variable first
+            # check environment variable first
             env_config_path = os.getenv("CLAUDE_SPEAK_CONFIG")
             if env_config_path:
                 config_path = Path(env_config_path)
             else:
-                # Check default .claude directory
+                # check default .claude directory
                 claude_config_path = Path.home() / ".claude" / "claude_speak.json"
                 if claude_config_path.exists():
                     config_path = claude_config_path
                 else:
-                    # Fallback to current directory
+                    # fallback to current directory
                     config_path = Path("./claude_speak.json").resolve()
         self.config_path = config_path
 
     def load_config(self) -> AppConfig:
-        """Load configuration from file or create default.
+        """
+        Load configuration from file or create default
 
         Returns:
             Loaded or default configuration.
@@ -170,33 +187,47 @@ class ConfigManager:
             with open(self.config_path) as f:
                 data = json.load(f)
 
-            # Parse RealtimeSTT config
+            # parse RealtimeSTT config
             realtime_stt_data = data.get("realtime_stt", {})
-            realtime_stt = RealtimeSTTConfig(**realtime_stt_data)
 
-            # Parse ClaudeSpeak config
+            # separate known dataclass fields from extra config
+            known_fields = {f.name for f in fields(RealtimeSTTConfig)}
+            known_config = {k: v for k, v in realtime_stt_data.items() if k in known_fields}
+            extra_config = {k: v for k, v in realtime_stt_data.items() if k not in known_fields}
+
+            realtime_stt = RealtimeSTTConfig(**known_config)
+            realtime_stt._extra_config = extra_config
+
+            # parse ClaudeSpeak config
             claude_speak_data = data.get("claude_speak", {})
             claude_speak = ClaudeSpeakConfig(**claude_speak_data)
 
             return AppConfig(realtime_stt=realtime_stt, claude_speak=claude_speak)
         except (json.JSONDecodeError, TypeError, KeyError) as e:
-            # On any configuration error, return default and warn
+            # on any configuration error, return default and warn
             print(f"Warning: Failed to load configuration from {self.config_path}: {e}")
             print("Using default configuration")
             return AppConfig.default()
 
     def save_config(self, config: AppConfig) -> None:
-        """Save configuration to file.
+        """
+        Save configuration to file
 
         Args:
-            config: Configuration to save.
+            config: Configuration to save
         """
-        # Ensure parent directory exists
+        # ensure parent directory exists
         self.config_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Convert to dictionary format
+        # convert to dictionary format
+        realtime_stt_dict = asdict(config.realtime_stt)
+        # remove internal field
+        realtime_stt_dict.pop("_extra_config", None)
+        # add extra keys
+        realtime_stt_dict.update(config.realtime_stt._extra_config)
+
         data = {
-            "realtime_stt": asdict(config.realtime_stt),
+            "realtime_stt": realtime_stt_dict,
             "claude_speak": asdict(config.claude_speak),
         }
 
@@ -204,100 +235,103 @@ class ConfigManager:
             json.dump(data, f, indent=2)
 
     def validate_config(self, config: AppConfig) -> list[str]:
-        """Validate configuration and return list of errors.
-
+        """
+        Validate configuration and return list of errors
         Args:
-            config: Configuration to validate.
-
+            config: Configuration to validate
         Returns:
-            List of validation error messages.
+            List of validation error messages
         """
         errors = []
 
-        # Validate RealtimeSTT config
-        if (
-            config.realtime_stt.model not in VALID_MODELS
-            and not Path(config.realtime_stt.model).exists()
-        ):
-            errors.append(f"Invalid model: {config.realtime_stt.model}")
-
-        if (
-            config.realtime_stt.realtime_model_type not in VALID_MODELS
-            and not Path(config.realtime_stt.realtime_model_type).exists()
-        ):
-            errors.append(f"Invalid realtime_model_type: {config.realtime_stt.realtime_model_type}")
-
-        # Validate timing settings
-        if config.realtime_stt.post_speech_silence_duration < 0:
-            errors.append("post_speech_silence_duration must be non-negative")
-
-        if config.realtime_stt.min_gap_between_recordings < 0:
-            errors.append("min_gap_between_recordings must be non-negative")
-
-        if config.realtime_stt.min_length_of_recording < 0:
-            errors.append("min_length_of_recording must be non-negative")
-
-        if config.realtime_stt.pre_recording_buffer_duration < 0:
-            errors.append("pre_recording_buffer_duration must be non-negative")
-
-        if config.realtime_stt.realtime_processing_pause < 0:
-            errors.append("realtime_processing_pause must be non-negative")
-
-        if config.realtime_stt.init_realtime_after_seconds < 0:
-            errors.append("init_realtime_after_seconds must be non-negative")
-
-        # Validate sensitivity settings (0-1 range)
-        if not 0 <= config.realtime_stt.silero_sensitivity <= 1:
-            errors.append("silero_sensitivity must be between 0 and 1")
-
-        # Validate WebRTC sensitivity (0-3 range)
-        if not 0 <= config.realtime_stt.webrtc_sensitivity <= 3:
-            errors.append("webrtc_sensitivity must be between 0 and 3")
-
-        # Validate device settings
-        if config.realtime_stt.device not in ["cuda", "cpu"]:
-            errors.append("device must be either 'cuda' or 'cpu'")
-
-        # Validate batch sizes
-        if config.realtime_stt.batch_size <= 0:
-            errors.append("batch_size must be positive")
-
-        if config.realtime_stt.realtime_batch_size <= 0:
-            errors.append("realtime_batch_size must be positive")
-
-        if config.realtime_stt.beam_size <= 0:
-            errors.append("beam_size must be positive")
-
-        if config.realtime_stt.beam_size_realtime <= 0:
-            errors.append("beam_size_realtime must be positive")
-
-        # Validate audio settings
-        if config.realtime_stt.input_device_index < 0:
-            errors.append("input_device_index must be non-negative")
-
-        if config.realtime_stt.gpu_device_index < 0:
-            errors.append("gpu_device_index must be non-negative")
-
-        if config.realtime_stt.sample_rate <= 0:
-            errors.append("sample_rate must be positive")
-
-        if config.realtime_stt.buffer_size <= 0:
-            errors.append("buffer_size must be positive")
-
-        if config.realtime_stt.allowed_latency_limit <= 0:
-            errors.append("allowed_latency_limit must be positive")
-
-        # Validate ClaudeSpeak config
+        # validate claude_speak config
         if not config.claude_speak.push_to_talk_key:
             errors.append("push_to_talk_key cannot be empty")
-
         if not config.claude_speak.recording_indicator:
             errors.append("recording_indicator cannot be empty")
+
+        # validate RealtimeSTT config
+        model = config.realtime_stt.model
+        if (model is not None and model not in VALID_MODELS and
+            not Path(model).exists()):
+            errors.append(f"Invalid model: {model}")
+        realtime_model = config.realtime_stt.realtime_model_type
+        if (realtime_model is not None and realtime_model not in VALID_MODELS and
+            not Path(realtime_model).exists()):
+            errors.append(f"Invalid realtime_model_type: {realtime_model}")
+
+        # validate timing settings
+        post_speech = config.realtime_stt.post_speech_silence_duration
+        if post_speech is not None and post_speech < 0:
+            errors.append("post_speech_silence_duration must be non-negative")
+        min_gap = config.realtime_stt.min_gap_between_recordings
+        if min_gap is not None and min_gap < 0:
+            errors.append("min_gap_between_recordings must be non-negative")
+        min_length = config.realtime_stt.min_length_of_recording
+        if min_length is not None and min_length < 0:
+            errors.append("min_length_of_recording must be non-negative")
+        pre_buffer = config.realtime_stt.pre_recording_buffer_duration
+        if pre_buffer is not None and pre_buffer < 0:
+            errors.append("pre_recording_buffer_duration must be non-negative")
+        processing_pause = config.realtime_stt.realtime_processing_pause
+        if processing_pause is not None and processing_pause < 0:
+            errors.append("realtime_processing_pause must be non-negative")
+        init_realtime = config.realtime_stt.init_realtime_after_seconds
+        if init_realtime is not None and init_realtime < 0:
+            errors.append("init_realtime_after_seconds must be non-negative")
+
+        # validate sensitivity settings (0-1 range)
+        silero_sens = config.realtime_stt.silero_sensitivity
+        if silero_sens is not None and not 0 <= silero_sens <= 1:
+            errors.append("silero_sensitivity must be between 0 and 1")
+
+        # validate WebRTC sensitivity (0-3 range)
+        webrtc_sens = config.realtime_stt.webrtc_sensitivity
+        if webrtc_sens is not None and not 0 <= webrtc_sens <= 3:
+            errors.append("webrtc_sensitivity must be between 0 and 3")
+
+        # validate device settings (only if specified)
+        device = config.realtime_stt.device
+        if device is not None and device not in ["cuda", "cpu"]:
+            errors.append("device must be either 'cuda' or 'cpu'")
+
+        # validate batch sizes
+        batch_size = config.realtime_stt.batch_size
+        if batch_size is not None and batch_size <= 0:
+            errors.append("batch_size must be positive")
+        realtime_batch = config.realtime_stt.realtime_batch_size
+        if realtime_batch is not None and realtime_batch <= 0:
+            errors.append("realtime_batch_size must be positive")
+        beam_size = config.realtime_stt.beam_size
+        if beam_size is not None and beam_size <= 0:
+            errors.append("beam_size must be positive")
+        beam_realtime = config.realtime_stt.beam_size_realtime
+        if beam_realtime is not None and beam_realtime <= 0:
+            errors.append("beam_size_realtime must be positive")
+
+        # validate audio settings
+        sample_rate = config.realtime_stt.sample_rate
+        if sample_rate is not None and sample_rate <= 0:
+            errors.append("sample_rate must be positive")
+        buffer_size = config.realtime_stt.buffer_size
+        if buffer_size is not None and buffer_size <= 0:
+            errors.append("buffer_size must be positive")
+        latency_limit = config.realtime_stt.allowed_latency_limit
+        if latency_limit is not None and latency_limit <= 0:
+            errors.append("allowed_latency_limit must be positive")
+
+        # validate device
+        input_device = config.realtime_stt.input_device_index
+        if input_device is not None and input_device < 0:
+            errors.append("input_device_index must be non-negative")
+        gpu_device = config.realtime_stt.gpu_device_index
+        if gpu_device is not None and gpu_device < 0:
+            errors.append("gpu_device_index must be non-negative")
 
         return errors
 
     def create_default_config(self) -> None:
-        """Create default configuration file if it doesn't exist."""
+        """Create default configuration file if it doesn't exist"""
         if not self.config_path.exists():
             default_config = AppConfig.default()
             self.save_config(default_config)
