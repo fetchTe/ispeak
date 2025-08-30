@@ -1,5 +1,6 @@
 import json
 import os
+import platform
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
@@ -159,8 +160,13 @@ class ConfigManager:
         Initialize configuration manager
 
         Args:
-            config_path: defaults to CODE_SPEAK_CONFIG env var,
-                        then ~/.config/code_speakcode_speak.json, then ./code_speak.json
+            config_path:
+              1. CODE_SPEAK_CONFIG env var
+              2. env specific config (<config>/code_speak/code_speak.json)
+                 - macOS: ~/Library/Preferences
+                 - Windows: %APPDATA% (or ~/AppData/Roaming as fallback)
+                 - Linux: $XDG_CONFIG_HOME (or ~/.config as fallback per XDG Base Directory spec)
+              3. ./code_speak.json
         """
         if config_path is None:
             # check environment variable first
@@ -168,14 +174,37 @@ class ConfigManager:
             if env_config_path:
                 config_path = Path(env_config_path)
             else:
-                # check default config directory
-                default_config_path = Path.home() / ".config" / "code_speak" / "code_speak.json"
+                # check default config directory using cross-platform function
+                default_config_path = self.get_config_dir() / "code_speak" / "code_speak.json"
                 if default_config_path.exists():
                     config_path = default_config_path
                 else:
                     # fallback to current directory
                     config_path = Path("./code_speak.json").resolve()
         self.config_path = config_path
+
+    def get_config_dir(self) -> Path:
+        """
+        Get the config directory based on the platform
+
+        Returns:
+            Path to the platform-appropriate config directory
+        """
+        system = platform.system().lower()
+        if system == "darwin":  # macOS
+            return Path.home() / "Library" / "Preferences"
+        elif system == "windows":
+            # use APPDATA if available, fallback to home/AppData/Roaming
+            appdata = os.getenv("APPDATA")
+            if appdata:
+                return Path(appdata)
+            return Path.home() / "AppData" / "Roaming"
+        else:  # linux and other Unix-like systems
+            # follow XDG Base Directory Specification
+            xdg_config = os.getenv("XDG_CONFIG_HOME")
+            if xdg_config:
+                return Path(xdg_config)
+            return Path.home() / ".config"
 
     def load_config(self) -> AppConfig:
         """
@@ -241,6 +270,7 @@ class ConfigManager:
     def validate_config(self, config: AppConfig) -> list[str]:
         """
         Validate configuration and return list of errors
+
         Args:
             config: Configuration to validate
         Returns:
