@@ -222,8 +222,15 @@ class VoiceInput:
             last_text = self.last_input.pop()
             # Calculate number of characters to delete (including the trailing space)
             chars_to_delete = len(last_text) + 1
-            for _ in range(chars_to_delete):
-                pyautogui.press("backspace")
+
+            if self.config.claude_speak.fast_delete:
+                # use array of backspace keys for faster deletion
+                backspace_keys = ["backspace"] * chars_to_delete
+                pyautogui.press(backspace_keys)
+            else:
+                # use loop for individual key presses
+                for _ in range(chars_to_delete):
+                    pyautogui.press("backspace")
 
     def _on_key_press(self, key: Key | KeyCode) -> None:
         """Handle keyboard key press events.

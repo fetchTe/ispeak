@@ -125,6 +125,8 @@ class ClaudeSpeakConfig:
     push_to_talk_key: str = "right_shift"
     recording_indicator: str = ";"
     delete_keywords: list[str] = None
+    # use a list of backspace's with pyautogui.press -> faster, but not as accurate
+    fast_delete: bool = True
     # removes extra white space (an extra space is always added to end)
     strip: bool = True
 
