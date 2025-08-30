@@ -53,17 +53,10 @@ class TextProcessor:
         """
         if not text:
             return text
-
         processed = text
-
-        if self.config.claude_speak.normalize_output:
-            # Lowercase and strip whitespace
-            processed = processed.lower().strip()
-
-            # Remove trailing period if configured
-            if self.config.claude_speak.remove_trailing_period and processed.endswith("."):
-                processed = processed[:-1]
-
+        # strip probs not needed in most/all cases
+        if self.config.claude_speak.strip:
+            processed = processed.strip()
         return processed
 
     def is_delete_command(self, text: str) -> bool:

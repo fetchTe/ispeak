@@ -110,8 +110,8 @@ class ClaudeSpeakConfig:
     push_to_talk_key: str = "right_shift"
     recording_indicator: str = ";"
     delete_keywords: list[str] = None
-    normalize_output: bool = True
-    remove_trailing_period: bool = True
+    # removes extra white space (an extra space is always added to end)
+    strip: bool = True
 
     def __post_init__(self) -> None:
         """Set default delete keywords if not provided."""
