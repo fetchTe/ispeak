@@ -1,9 +1,9 @@
-from my_package import hello
+#!/usr/bin/env python3
+# main entry point for claude_speak
 
+import sys
 
-def main() -> None:
-    print(hello())
-
+from claude_speak.cli import main
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
