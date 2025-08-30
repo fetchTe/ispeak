@@ -5,7 +5,6 @@ import pyautogui
 import pynput.keyboard
 from pynput.keyboard import Key, KeyCode
 from rich.console import Console
-from rich.panel import Panel
 
 from .config import AppConfig, ConfigManager
 from .recorder import AudioRecorder, RealtimeSTTRecorder

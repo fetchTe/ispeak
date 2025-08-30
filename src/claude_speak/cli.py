@@ -151,6 +151,7 @@ def run_with_claude(claude_args: list) -> int:
 
     Args:
         claude_args: Arguments to pass to claude command.
+
     Returns:
         Exit code from claude execution.
     """

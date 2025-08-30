@@ -1,4 +1,5 @@
-"""Claude Speak - Speech-to-text for Claude Code.
+"""
+Claude Speak - Speech-to-text for Claude Code
 
 A lightweight, low-latency speech-to-text library that provides seamless
 voice input integration with Claude Code.
