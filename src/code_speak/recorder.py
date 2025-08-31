@@ -66,7 +66,10 @@ class RealtimeSTTRecorder:
         """
         if self._recorder is None:
             raise RuntimeError("Recorder not initialized")
-        return self._recorder.text()
+        res = self._recorder.text()
+        if not res:
+            return ""
+        return res
 
     def shutdown(self) -> None:
         """Shutdown recorder and cleanup resources"""
