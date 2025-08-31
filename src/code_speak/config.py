@@ -5,6 +5,10 @@ from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
 
+from pynput.keyboard import Key, KeyCode
+
+from .core import key_to_str
+
 VALID_MODELS = [
     "tiny",
     "tiny.en",
@@ -91,7 +95,7 @@ class RealtimeSTTConfig:
     start_callback_in_new_thread: bool | None = None
 
     # store extra configuration keys not defined in dataclass
-    _extra_config: dict[str, Any] = None
+    _extra_config: dict[str, Any] = None  # type: ignore
 
     def __post_init__(self) -> None:
         # set default values for complex fields
@@ -125,18 +129,33 @@ class CodeSpeakConfig:
 
     # default executable for AI code generation
     binary: str = "claude"
+    # key to initilize rec session
     push_to_talk_key: str = "right_shift"
+    # execution delay applied after push_to_talk_key (via time.sleep) - helps pervent mistypes
+    push_to_talk_key_delay: float | int = 0.2
+    # key to "escape" current rec session, ends without outputing transcription
+    escape_key: str | Key | KeyCode | None = Key.esc
+    # char/word outputed when recording starts
     recording_indicator: str = ";"
-    delete_keywords: list[str] = None
+    # list of words/phrases, when detected will delete previous output
+    delete_keywords: list[str] | bool | None = True
     # use a list of backspace's with pyautogui.press -> faster, but not as accurate
     fast_delete: bool = True
     # removes extra white space (an extra space is always added to end)
     strip: bool = True
+    # pyautogui - interval in between each press (in seconds) - if experiancing
+    # typeing/output issues like partial outputs bump this value up
+    pyautogui_interval: float | int = 0.0
 
     def __post_init__(self) -> None:
         # set default delete keywords if not provided
-        if self.delete_keywords is None:
+        if not self.delete_keywords:
+            self.delete_keywords = []
+        if self.delete_keywords is True:
             self.delete_keywords = ["delete last", "undo last"]
+        # keys setup
+        self.escape_key = key_to_str(self.escape_key)
+        self.push_to_talk_key = key_to_str(self.push_to_talk_key)
 
 
 @dataclass

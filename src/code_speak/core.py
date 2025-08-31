@@ -10,7 +10,7 @@ from .config import AppConfig, ConfigManager
 from .recorder import AudioRecorder, RealtimeSTTRecorder
 
 
-def key_to_str(key: Key | KeyCode) -> str:
+def key_to_str(key: str | Key | KeyCode | None) -> str:
     """
     Convert pynput key to string representation
 
@@ -19,13 +19,15 @@ def key_to_str(key: Key | KeyCode) -> str:
     Returns:
         String representation of the key
     """
+    if not key:
+        return ""
     if isinstance(key, KeyCode):
         if key.char:
-            return key.char
+            return str(key.char).lower()
         # fallback for non-printable KeyCodes
-        return f"vk_{key.vk}"
+        return f"vk_{key.vk}".lower()
     elif isinstance(key, Key):
-        return key.name
+        return str(key.name).lower()
     return str(key)
 
 
@@ -67,11 +69,15 @@ class TextProcessor:
         Returns:
             True if text matches a delete keyword
         """
+        delete_keywords = self.config.code_speak.delete_keywords
+        if not delete_keywords:
+            return False
+        # normalized and remove end period
         normalized = text.lower().strip()
         if normalized.endswith("."):
             normalized = normalized[:-1]
         return normalized in [
-            keyword.lower() for keyword in self.config.code_speak.delete_keywords
+            keyword.lower() for keyword in delete_keywords  # type: ignore
         ]
 
 
@@ -82,17 +88,17 @@ class VoiceInput:
         # load configuration
         config_manager = ConfigManager()
         self.config = config_manager.load_config()
+        self.console = Console()
 
         # validate configuration
         errors = config_manager.validate_config(self.config)
         if errors:
-            print("Configuration validation errors:")
+            self.console.print("\n[red][bold]ERROR[/bold] Configuration validation errors:[/red]")
             for error in errors:
                 print(f"  - {error}")
-            print("Using default values for invalid settings.")
+            self.console.print("[yellow][bold]NOTE[/bold] Using default values for invalid settings[/yellow]")
 
         # initialize components
-        self.console = Console()
         self.text_processor = TextProcessor(self.config)
 
         # state management
@@ -162,10 +168,13 @@ class VoiceInput:
 
         self.recording = True
         # brief delay required, otherwise typewrite won't fire properly
-        time.sleep(0.2)
+        time.sleep(self.config.code_speak.push_to_talk_key_delay)
 
         # type recording indicator
-        pyautogui.typewrite(self.config.code_speak.recording_indicator)
+        pyautogui.typewrite(
+            self.config.code_speak.recording_indicator,
+            self.config.code_speak.pyautogui_interval,
+        )
 
         # start recorder
         try:
@@ -174,23 +183,26 @@ class VoiceInput:
             self.console.print(f"[red]Failed to start recording: {e}[/red]")
             self.recording = False
             # remove indicator on failure
-            pyautogui.press("backspace")
+            self._handle_delete_indicator()
 
-    def _stop_recording(self) -> None:
+    def _stop_recording(self, is_esc: bool = False) -> None:
         """Stop recording and process transcribed text"""
         if not self.recording or self.recorder is None:
             return
 
         self.recording = False
         # brief delay required, otherwise typewrite won't fire properly
-        time.sleep(0.2)
+        time.sleep(self.config.code_speak.push_to_talk_key_delay)
 
         # remove recording indicator
-        pyautogui.press("backspace")
+        self._handle_delete_indicator()
 
         # stop recorder and get text
         try:
             self.recorder.stop()
+            # is escape we stop witout outputing transcription
+            if is_esc:
+                return
             raw_text = self.recorder.text()
 
             if raw_text:
@@ -209,43 +221,50 @@ class VoiceInput:
         except Exception as e:
             self.console.print(f"[red]Error during transcription: {e}[/red]")
 
+    def _handle_delete(self, chars_to_delete: int = 0) -> None:
+        """Handles actual backspace of chars"""
+        if not chars_to_delete:
+            return
+        if self.config.code_speak.fast_delete:
+            # use array of backspace keys for faster deletion
+            backspace_keys = ["backspace"] * chars_to_delete
+            pyautogui.press(backspace_keys, interval=self.config.code_speak.pyautogui_interval)
+            return
+        # loop for individual key presses - much slower but may be more accurate in some envs
+        for _ in range(chars_to_delete):
+            pyautogui.press("backspace", interval=self.config.code_speak.pyautogui_interval)
+
+    def _handle_delete_indicator(self) -> None:
+        """Handle delete of rec indicator"""
+        self._handle_delete(len(self.config.code_speak.recording_indicator))
+
     def _handle_delete_last(self) -> None:
         """Handle delete last command by simulating backspace"""
         if self.last_input:
             # get the most recent input to delete
             last_text = self.last_input.pop()
             # calculate number of characters to delete (including the trailing space)
-            chars_to_delete = len(last_text) + 1
+            self._handle_delete(len(last_text) + 1)
 
-            if self.config.code_speak.fast_delete:
-                # use array of backspace keys for faster deletion
-                backspace_keys = ["backspace"] * chars_to_delete
-                pyautogui.press(backspace_keys)
-            else:
-                # use loop for individual key presses
-                for _ in range(chars_to_delete):
-                    pyautogui.press("backspace")
-
-    def _on_key_press(self, key: Key | KeyCode) -> None:
+    def _on_key_press(self, key: Key | KeyCode | None) -> None:
         """
         Handle keyboard key press events
 
         Args:
             key: Pressed key from pynput
         """
-        if not self.active:
+        if not self.active or not key:
             return
 
+        key_str = key_to_str(key)
         # check for escape key to cancel recording
-        if key == Key.esc and self.recording:
-            self._stop_recording()
+        if self.recording and self.config.code_speak.escape_key == key_str:
+            self._stop_recording(is_esc=True)
             return
+
 
         # check if it's the push-to-talk key
-        key_str = key_to_str(key).lower()
-        ptt_key = self.config.code_speak.push_to_talk_key.lower()
-
-        if key_str == ptt_key:
+        if key_str == self.config.code_speak.push_to_talk_key:
             if self.recording:
                 self._stop_recording()
             else:
