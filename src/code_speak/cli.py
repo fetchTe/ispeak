@@ -27,12 +27,10 @@ def setup_voice() -> None:
     console.print("Press your desired PTT key (or Enter to keep current)...")
 
     captured_key = None
-
-    def on_key_press(key: Key | KeyCode) -> bool:
+    def on_key_press(key: Key | KeyCode | None) -> None:
         nonlocal captured_key
         captured_key = key_to_str(key)
         console.print(f"Captured: [green]{captured_key}[/green]")
-        return False  # stop listener
 
     listener = pynput.keyboard.Listener(on_press=on_key_press)
     listener.start()
@@ -95,6 +93,7 @@ def test_voice() -> None:
     def handle_test_text(text: str) -> None:
         console.print(f"[green]Transcribed:[/green] {text}")
 
+    voice_input = None
     try:
         voice_input = VoiceInput()
         voice_input.start(handle_test_text)
@@ -116,7 +115,7 @@ def test_voice() -> None:
         console.print(f"[red]Error starting voice input: {e}[/red]")
         sys.exit(1)
     finally:
-        if "voice_input" in locals():
+        if voice_input:
             voice_input.stop()
         console.print("\n[yellow]Test completed.[/yellow]")
 
