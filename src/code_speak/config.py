@@ -7,8 +7,6 @@ from typing import Any
 
 from pynput.keyboard import Key, KeyCode
 
-from .core import key_to_str
-
 VALID_MODELS = [
     "tiny",
     "tiny.en",
@@ -21,6 +19,27 @@ VALID_MODELS = [
     "large-v1",
     "large-v2",
 ]
+
+
+def key_to_str(key: str | Key | KeyCode | None) -> str:
+    """
+    Convert pynput key to string representation
+
+    Args:
+        key: Key from pynput keyboard listener
+    Returns:
+        String representation of the key
+    """
+    if not key:
+        return ""
+    if isinstance(key, KeyCode):
+        if key.char:
+            return str(key.char).lower()
+        # fallback for non-printable KeyCodes
+        return f"<{key.vk}>".lower()
+    elif isinstance(key, Key):
+        return str(key.name).lower()
+    return str(key)
 
 
 @dataclass
@@ -130,11 +149,11 @@ class CodeSpeakConfig:
     # default executable for AI code generation
     binary: str = "claude"
     # key to initilize rec session
-    push_to_talk_key: str = "right_shift"
+    push_to_talk_key: str = key_to_str(Key.shift_r.value)
     # execution delay applied after push_to_talk_key (via time.sleep) - helps pervent mistypes
     push_to_talk_key_delay: float | int = 0.2
     # key to "escape" current rec session, ends without outputing transcription
-    escape_key: str | Key | KeyCode | None = Key.esc
+    escape_key: str | None = key_to_str(Key.esc.value)
     # char/word outputed when recording starts
     recording_indicator: str = ";"
     # list of words/phrases, when detected will delete previous output
@@ -142,7 +161,7 @@ class CodeSpeakConfig:
     # use a list of backspace's with pyautogui.press -> faster, but not as accurate
     fast_delete: bool = True
     # removes extra white space (an extra space is always added to end)
-    strip: bool = True
+    strip_whitespace: bool = True
     # pyautogui - interval in between each press (in seconds) - if experiancing
     # typeing/output issues like partial outputs bump this value up
     pyautogui_interval: float | int = 0.0
@@ -152,10 +171,17 @@ class CodeSpeakConfig:
         if not self.delete_keywords:
             self.delete_keywords = []
         if self.delete_keywords is True:
-            self.delete_keywords = ["delete last", "undo last"]
-        # keys setup
-        self.escape_key = key_to_str(self.escape_key)
-        self.push_to_talk_key = key_to_str(self.push_to_talk_key)
+            self.delete_keywords = ["delete", "undo"]
+        # esc key setup
+        if self.escape_key and self.escape_key in Key:
+            self.escape_key = key_to_str(Key[self.escape_key].value)
+        else:
+            self.escape_key = key_to_str(self.escape_key)
+        # hot key setup
+        if self.push_to_talk_key in Key:
+            self.push_to_talk_key = key_to_str(Key[self.push_to_talk_key].value)
+        else:
+            self.push_to_talk_key = key_to_str(self.push_to_talk_key)
 
 
 @dataclass

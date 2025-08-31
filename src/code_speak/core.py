@@ -2,33 +2,11 @@ import time
 from collections.abc import Callable
 
 import pyautogui
-import pynput.keyboard
-from pynput.keyboard import Key, KeyCode
+from pynput import keyboard
 from rich.console import Console
 
 from .config import AppConfig, ConfigManager
 from .recorder import AudioRecorder, RealtimeSTTRecorder
-
-
-def key_to_str(key: str | Key | KeyCode | None) -> str:
-    """
-    Convert pynput key to string representation
-
-    Args:
-        key: Key from pynput keyboard listener
-    Returns:
-        String representation of the key
-    """
-    if not key:
-        return ""
-    if isinstance(key, KeyCode):
-        if key.char:
-            return str(key.char).lower()
-        # fallback for non-printable KeyCodes
-        return f"vk_{key.vk}".lower()
-    elif isinstance(key, Key):
-        return str(key.name).lower()
-    return str(key)
 
 
 class TextProcessor:
@@ -56,7 +34,7 @@ class TextProcessor:
             return text
         processed = text
         # strip probs not needed in most/all cases
-        if self.config.code_speak.strip:
+        if self.config.code_speak.strip_whitespace:
             processed = processed.strip()
         return processed
 
@@ -104,7 +82,7 @@ class VoiceInput:
         # state management
         self.active = False
         self.recording = False
-        self.listener: pynput.keyboard.Listener | None = None
+        self.listener: keyboard.Listener | None = None
         self.recorder: AudioRecorder | None = None
         self.on_text: Callable[[str], None] | None = None
         self.last_input: list[str] = []  # track last inputs for delete functionality
@@ -137,7 +115,12 @@ class VoiceInput:
         self.console.print(f"[blue]  Push-to-Talk: {self.config.code_speak.push_to_talk_key}[/blue]")
 
         # start keyboard listener for push-to-talk
-        self.listener = pynput.keyboard.Listener(on_press=self._on_key_press)
+        hot_rec = {self.config.code_speak.push_to_talk_key: self._on_key_press_hotkey}
+        # add esc if present
+        if self.config.code_speak.escape_key:
+            hot_rec[self.config.code_speak.escape_key] = self._on_key_press_esckey
+        # https://pynput.readthedocs.io/en/latest/keyboard-usage.html#global-hotkeys
+        self.listener = keyboard.GlobalHotKeys(hot_rec)
         self.listener.start()
 
     def stop(self) -> None:
@@ -246,29 +229,32 @@ class VoiceInput:
             # calculate number of characters to delete (including the trailing space)
             self._handle_delete(len(last_text) + 1)
 
-    def _on_key_press(self, key: Key | KeyCode | None) -> None:
+    def _on_key_press_esckey(self) -> None:
         """
-        Handle keyboard key press events
+        Handle keyboard 'escape' key press events
 
         Args:
             key: Pressed key from pynput
         """
-        if not self.active or not key:
+        if not self.active:
             return
-
-        key_str = key_to_str(key)
-        # check for escape key to cancel recording
-        if self.recording and self.config.code_speak.escape_key == key_str:
+        if self.recording:
             self._stop_recording(is_esc=True)
             return
 
+    def _on_key_press_hotkey(self) -> None:
+        """
+        Handle keyboard 'hotkey' key press events
 
-        # check if it's the push-to-talk key
-        if key_str == self.config.code_speak.push_to_talk_key:
-            if self.recording:
-                self._stop_recording()
-            else:
-                self._start_recording()
+        Args:
+            key: Pressed key from pynput
+        """
+        if not self.active:
+            return
+        if self.recording:
+            self._stop_recording()
+        else:
+            self._start_recording()
 
     def __del__(self) -> None:
         # ensure cleanup on deletion
