@@ -9,6 +9,7 @@ from rich.console import Console
 
 from .config import AppConfig
 from .recorder import AudioRecorder, RealtimeSTTRecorder
+from .replace import TextReplacer
 
 
 class TextProcessor:
@@ -22,6 +23,7 @@ class TextProcessor:
             config: Application configuration
         """
         self.config = config
+        self.replacer = TextReplacer(config.code_speak.replace) if config.code_speak.replace else None
 
     def process_text(self, text: str) -> str:
         """
@@ -35,9 +37,15 @@ class TextProcessor:
         if not text:
             return text
         processed = text
+
         # strip probs not needed in most/all cases
         if self.config.code_speak.strip_whitespace:
             processed = processed.strip()
+
+        # apply regex replacements
+        if self.replacer:
+            processed = self.replacer.apply_replacements(processed)
+
         return processed
 
     def is_delete_command(self, text: str) -> bool:

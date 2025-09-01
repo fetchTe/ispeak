@@ -6,6 +6,7 @@ with AI cli's: claude code, codex, aider, and the like
 from .config import AppConfig, CodeSpeakConfig, ConfigManager, RealtimeSTTConfig
 from .core import TextProcessor, VoiceInput
 from .recorder import AudioRecorder, RealtimeSTTRecorder
+from .replace import TextReplacer
 
 __version__ = "0.1.0"
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "RealtimeSTTConfig",
     "RealtimeSTTRecorder",
     "TextProcessor",
+    "TextReplacer",
     "VoiceInput",
 ]

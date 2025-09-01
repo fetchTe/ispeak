@@ -160,6 +160,8 @@ class CodeSpeakConfig:
     log_file: str | None = None
     # disable typing output and recording indicator (disables pyautogui)
     no_typing: bool = False
+    # regex replacement rules - dict of patterns/replacements or list of file paths
+    replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output
     delete_keywords: list[str] | bool | None = True
     # use a list of backspace's with pyautogui.press -> faster, but not as accurate
