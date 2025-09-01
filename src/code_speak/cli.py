@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import pyautogui
 import pynput.keyboard
@@ -48,10 +49,10 @@ def capture_key(console: Console, prompt_text: str) -> str | None:
         return captured_key if captured_key != "enter" else None
 
 
-def setup_voice() -> None:
+def setup_voice(config_path: str | None = None) -> None:
     """Interactive configuration for voice settings"""
     console = Console()
-    config_manager = ConfigManager()
+    config_manager = ConfigManager(Path(config_path) if config_path else None)
     config = config_manager.load_config()
 
     time.sleep(1)
@@ -59,11 +60,14 @@ def setup_voice() -> None:
 
     # configure binary/executable
     print_option_header(
-        console, "binary", "default executable for AI code generation", config.code_speak.binary
+        console, "binary", "default executable to launch with voice input", config.code_speak.binary
     )
     console.print(
-        f"\n[bold][blue]>[/blue][/bold] [white]enter executable binary/program {OR_ENTER}[/white]"
+        f"\n[bold][blue]>[/blue][/bold] [white]enter executable binary/program, none, {OR_ENTER}[/white]"
     )
+    binary = config.code_speak.binary
+    if not len(config.code_speak.binary):
+        binary = "none"
     binary = Prompt.ask("[bold]>[/bold]", default=config.code_speak.binary)
     config.code_speak.binary = binary
     time.sleep(1)
@@ -249,11 +253,11 @@ def setup_voice() -> None:
         console.print(f"  language               : [blue]{config.realtime_stt.language}[/blue]")
         console.print(f"  model                  : [blue]{config.realtime_stt.model}[/blue]\n")
     except Exception as e:
-        console.print(f"[red]Failed to save configuration: {e}[/red]")
+        console.print(f"[red][bold][ERROR][/bold] Failed to save configuration: {e}[/red]")
         sys.exit(1)
 
 
-def test_voice() -> None:
+def test_voice(config_path: str | None = None) -> None:
     """Test voice input functionality"""
     console = Console()
     console.print("[yellow][bold]Voice Input Test[/bold][/yellow]")
@@ -265,7 +269,7 @@ def test_voice() -> None:
 
     voice_input = None
     try:
-        voice_input = VoiceInput()
+        voice_input = VoiceInput(config_path)
         voice_input.start(handle_test_text)
 
         console.print("\n[yellow][bold]Instructions (ctrl+c to stop test)[/bold][/yellow]")
@@ -286,18 +290,18 @@ def test_voice() -> None:
             pass
 
     except Exception as e:
-        console.print(f"[red]Error starting voice input: {e}[/red]")
+        console.print(f"[red][bold][ERROR][/bold] starting voice input: {e}[/red]")
         sys.exit(1)
     finally:
         if voice_input:
             voice_input.stop()
-        console.print("\n[yellow]Test completed.[/yellow]")
+        console.print("\n[yellow]Test completed[/yellow]")
 
 
-def show_config() -> None:
+def show_config(config_path: str | None = None) -> None:
     """Display current configuration"""
     console = Console()
-    config_manager = ConfigManager()
+    config_manager = ConfigManager(Path(config_path) if config_path else None)
 
     try:
         config = config_manager.load_config()
@@ -314,24 +318,25 @@ def show_config() -> None:
         )
 
     except Exception as e:
-        console.print(f"[red]Error loading configuration: {e}[/red]")
+        console.print(f"[red][bold][ERROR][/bold] loading configuration: {e}[/red]")
         sys.exit(1)
 
 
-def run_with_ai_tool(ai_args: list, bin_override: str | None = None) -> int:
+def run_with_bin(bin_args: list, bin_override: str | None = None, config_path: str | None = None) -> int:
     """
-    Run AI tool with voice integration
+    Run bin/executable with voice integration
 
     Args:
-        ai_args: Arguments to pass to AI tool command.
+        bin_args: Arguments to pass to bin command.
         bin_override: Override executable from command line.
+        config_path: Path to config file.
 
     Returns:
-        Exit code from AI tool execution.
+        Exit code from bin execution.
     """
     console = Console()
 
-    console.print("\n[bold][red]◉[/red] [yellow]Code Speak Init[/yellow][/bold]\n")
+    console.print("\n[bold][red]◉[/red] [cyan]Code Speak Init[/cyan][/bold]\n")
 
     voice_enabled = False
     voice_input = None
@@ -343,11 +348,11 @@ def run_with_ai_tool(ai_args: list, bin_override: str | None = None) -> int:
             # a handful of pyautogui.typewrite glitches/hiccups
             pyautogui.typewrite(text + " ")
         except Exception as e:
-            console.print(f"[red]Error typing text: {e}[/red]")
+            console.print(f"[red][bold][ERROR][/bold] typing text: {e}[/red]")
 
     # try to start voice input
     try:
-        voice_input = VoiceInput()
+        voice_input = VoiceInput(config_path)
         voice_input.start(handle_voice_text)
         voice_enabled = True
 
@@ -357,12 +362,12 @@ def run_with_ai_tool(ai_args: list, bin_override: str | None = None) -> int:
 
     cmd = []
     try:
-        # build command and run AI tool
-        config_manager = ConfigManager()
+        # build command and run binary
+        config_manager = ConfigManager(Path(config_path) if config_path else None)
         config = config_manager.load_config()
         executable = bin_override or config.code_speak.binary
-        cmd = [executable, *ai_args]
-        console.print("\n[green][bold]> {}[/green]".format(" ".join(cmd)))
+        cmd = [executable, *bin_args]
+        console.print("\n[cyan][bold]> {}[/cyan]".format(" ".join(cmd)))
         result = subprocess.run(cmd)
         return_code = result.returncode
 
@@ -370,12 +375,12 @@ def run_with_ai_tool(ai_args: list, bin_override: str | None = None) -> int:
         return_code = 0
     except FileNotFoundError:
         console.print(
-            f"[red]Error: '{cmd[0] if cmd else 'AI tool'}' command not found."
+            f"[red][bold][ERROR][/bold] '{cmd[0] if cmd else 'binary'}' command not found."
             " Make sure it is installed and in PATH.[/red]"
         )
         return_code = 1
     except Exception as e:
-        console.print(f"[red]Error running AI tool: {e}[/red]")
+        console.print(f"[red][bold][ERROR][/bold] running binary tool: {e}[/red]")
         return_code = 1
     finally:
         # clean up voice input
@@ -391,34 +396,35 @@ def run_with_ai_tool(ai_args: list, bin_override: str | None = None) -> int:
 def main() -> int:
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="AI Code Generation Tools with Voice Input",
+        description="Code Speak Voice Input",
         add_help=False,  # we'll handle help ourselves
     )
 
     # our specific arguments
-    parser.add_argument("-b", "--binary", help="AI code generation executable (default from config)")
+    parser.add_argument("-b", "--binary", help="Executable to launch with voice input (default from config)")
+    parser.add_argument("-c", "--config", help="Path to configuration file")
     parser.add_argument("-s", "--setup", action="store_true", help="Configure voice settings")
     parser.add_argument("-t", "--test", action="store_true", help="Test voice input functionality")
-    parser.add_argument("-c", "--config", action="store_true", help="Show current configuration")
+    parser.add_argument("--config-show", action="store_true", help="Show current configuration")
 
-    # parse known args to separate ours from AI tool's
-    our_args, ai_args = parser.parse_known_args()
+    # parse known args to separate ours from executable tool's
+    our_args, bin_args = parser.parse_known_args()
 
     # handle our specific commands
     if our_args.setup:
-        setup_voice()
+        setup_voice(our_args.config)
         return 0
 
     if our_args.test:
-        test_voice()
+        test_voice(our_args.config)
         return 0
 
-    if our_args.config:
-        show_config()
+    if our_args.config_show:
+        show_config(our_args.config)
         return 0
 
-    # if no specific command, run with AI tool integration
-    return run_with_ai_tool(ai_args, our_args.binary)
+    # if no specific command, run with executable tool integration
+    return run_with_bin(bin_args, our_args.binary, our_args.config)
 
 
 if __name__ == "__main__":

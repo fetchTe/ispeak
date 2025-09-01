@@ -1,5 +1,6 @@
 import time
 from collections.abc import Callable
+from pathlib import Path
 
 import pyautogui
 from pynput import keyboard
@@ -62,9 +63,9 @@ class TextProcessor:
 class VoiceInput:
     """Main voice input handler for AI code generation tools"""
 
-    def __init__(self) -> None:
+    def __init__(self, config_path: str | None = None) -> None:
         # load configuration
-        config_manager = ConfigManager()
+        config_manager = ConfigManager(Path(config_path) if config_path else None)
         self.config = config_manager.load_config()
         self.console = Console()
 
