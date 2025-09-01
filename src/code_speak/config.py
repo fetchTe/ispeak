@@ -21,7 +21,7 @@ VALID_MODELS = [
 ]
 
 
-def key_to_str(key: str | Key | KeyCode | None) -> str:
+def key_to_str(ikey: str | Key | KeyCode | None) -> str:
     """
     Convert pynput key to string representation
 
@@ -30,16 +30,22 @@ def key_to_str(key: str | Key | KeyCode | None) -> str:
     Returns:
         String representation of the key
     """
-    if not key:
+    if not ikey:
         return ""
-    if isinstance(key, KeyCode):
-        if key.char:
-            return str(key.char).lower()
+
+    # enum key/value check like 'esc' which in turn is transformed to <65307>
+    if isinstance(ikey, str):
+        if hasattr(Key, ikey):
+            ikey = Key[ikey].value
+
+    if isinstance(ikey, KeyCode):
+        if ikey.char:
+            return str(ikey.char).lower()
         # fallback for non-printable KeyCodes
-        return f"<{key.vk}>".lower()
-    elif isinstance(key, Key):
-        return str(key.name).lower()
-    return str(key)
+        return f"<{ikey.vk}>".lower()
+    elif isinstance(ikey, Key):
+        return str(ikey.name).lower()
+    return str(ikey)
 
 
 @dataclass
@@ -146,14 +152,14 @@ class RealtimeSTTConfig:
 class CodeSpeakConfig:
     """Configuration for code-speak specific settings"""
 
-    # default executable for AI code generation
-    binary: str = "claude"
+    # default binary/executable (empty string enables binary-less mode)
+    binary: str | None = None
     # key to initilize rec session
-    push_to_talk_key: str = key_to_str(Key.shift_r.value)
+    push_to_talk_key: str = "end"
     # execution delay applied after push_to_talk_key (via time.sleep) - helps pervent mistypes
     push_to_talk_key_delay: float | int = 0.2
     # key to "escape" current rec session, ends without outputing transcription
-    escape_key: str | None = key_to_str(Key.esc.value)
+    escape_key: str | None = "esc"
     # char/word outputed when recording starts
     recording_indicator: str = ";"
     # path to log file for voice transcriptions
@@ -178,16 +184,9 @@ class CodeSpeakConfig:
             self.delete_keywords = []
         if self.delete_keywords is True:
             self.delete_keywords = ["delete", "undo"]
-        # esc key setup
-        if self.escape_key and self.escape_key in Key:
-            self.escape_key = key_to_str(Key[self.escape_key].value)
-        else:
-            self.escape_key = key_to_str(self.escape_key)
-        # hot key setup
-        if self.push_to_talk_key in Key:
-            self.push_to_talk_key = key_to_str(Key[self.push_to_talk_key].value)
-        else:
-            self.push_to_talk_key = key_to_str(self.push_to_talk_key)
+        # key setup
+        self.escape_key = key_to_str(self.escape_key)
+        self.push_to_talk_key = key_to_str(self.push_to_talk_key)
 
 
 @dataclass

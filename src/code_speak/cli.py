@@ -6,7 +6,7 @@ from rich.console import Console
 
 from .cli_commands import setup_voice, show_config, test_voice
 from .config import ConfigManager
-from .core import run_with_bin
+from .core import runner
 
 
 def main() -> int:
@@ -60,8 +60,15 @@ def main() -> int:
         show_config(config_manager)
         return 0
 
+    # check for help in binary-less mode
+    if "--help" in bin_args or "-h" in bin_args:
+        executable = our_args.binary or config.code_speak.binary
+        if not executable:  # binary-less mode
+            parser.print_help()
+            return 0
+
     # if no specific command, run with executable tool integration
-    return run_with_bin(bin_args, our_args.binary, config)
+    return runner(bin_args, our_args.binary, config)
 
 
 if __name__ == "__main__":

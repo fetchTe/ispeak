@@ -110,7 +110,7 @@ class VoiceInput:
         self.on_text = on_text
 
         # show startup message
-        self.console.print("\n[bold][red]◉[/red] [green]Code Speak Active[/green][/bold]")
+        self.console.print("\n[bold][red]◉[/red] [cyan]Code Speak Active[/cyan][/bold]")
         self.console.print(f"[blue]  Model       : {self.config.realtime_stt.model}[/blue]")
         self.console.print(f"[blue]  Language    : {self.config.realtime_stt.language or 'auto'}[/blue]")
         self.console.print(f"[blue]  Push-to-Talk: {self.config.code_speak.push_to_talk_key}[/blue]")
@@ -155,7 +155,7 @@ class VoiceInput:
         time.sleep(self.config.code_speak.push_to_talk_key_delay)
 
         # type recording indicator
-        if not self.config.code_speak.no_typing:
+        if self.config.code_speak.no_typing != True:
             pyautogui.typewrite(
                 self.config.code_speak.recording_indicator,
                 self.config.code_speak.pyautogui_interval,
@@ -208,7 +208,7 @@ class VoiceInput:
 
     def _handle_delete(self, chars_to_delete: int = 0) -> None:
         """Handles actual backspace of chars"""
-        if not chars_to_delete or not self.config.code_speak.no_typing:
+        if not chars_to_delete or self.config.code_speak.no_typing:
             return
         if self.config.code_speak.fast_delete:
             # use array of backspace keys for faster deletion
@@ -263,9 +263,9 @@ class VoiceInput:
         self.stop()
 
 
-def run_with_bin(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
+def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     """
-    Run bin/executable with voice integration
+    Run bin/executable or bin-less with voice integration
 
     Args:
         bin_args: Arguments to pass to bin command.
@@ -277,13 +277,15 @@ def run_with_bin(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     """
     console = Console()
 
-    console.print("\n[bold][red]◉[/red] [cyan]Code Speak Init[/cyan][/bold]\n")
+    console.print("[bold][red]◉[/red][/bold] Code Speak Init\n")
 
     voice_enabled = False
     voice_input = None
 
     executable = bin_cli or config.code_speak.binary
-    log_print = None if executable else True
+    # enable binary-less mode if executable is empty/null
+    binary_less_mode = not executable
+    log_print = binary_less_mode
 
     def handle_voice_text(text: str) -> None:
         """Handle transcribed text by typing it"""
@@ -299,11 +301,11 @@ def run_with_bin(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
         if log_print:
             # show styled version in terminal
             console.print(
-                f"[dim][white]## [/white][blue]{timestamp}[/blue][/dim]\n{text}\n\n",
+                f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n",
                 end=""
             )
 
-        if not config.code_speak.no_typing:
+        if config.code_speak.no_typing != True:
             try:
                 # for whatever reason, adding an extra space at the end resolves
                 # a handful of pyautogui.typewrite glitches/hiccups
@@ -323,11 +325,24 @@ def run_with_bin(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
 
     cmd = []
     try:
-        # build command and run binary
-        cmd = [executable, *bin_args]
-        console.print("\n[cyan][bold]> {}[/cyan]".format(" ".join(cmd)))
-        result = subprocess.run(cmd)
-        return_code = result.returncode
+        if binary_less_mode:
+            # binary-less mode: just run voice input without subprocess
+            console.print("\n[bold][cyan]> Voice Mode[/cyan][/bold] [yellow](to exit: ctrl+c)[/yellow]")
+            console.print("")
+            if voice_enabled:
+                try:
+                    # keep running until interrupted
+                    while True:
+                        time.sleep(10)
+                except KeyboardInterrupt:
+                    pass
+            return_code = 0
+        else:
+            # normal mode: build command and run binary
+            cmd = [executable, *bin_args]
+            console.print("\n[bold][cyan]> {}[/cyan][/bold]".format(" ".join(cmd)))
+            result = subprocess.run(cmd)
+            return_code = result.returncode
 
     except KeyboardInterrupt:
         return_code = 0

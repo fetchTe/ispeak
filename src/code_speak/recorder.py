@@ -41,6 +41,10 @@ class RealtimeSTTRecorder:
         """Initialize the RealtimeSTT recorder with configuration"""
         try:
             config_dict = self.config.to_dict()
+            # @TODO -> meh, wake_words are really not worth the hassle
+            # if 'wake_words' in config_dict:
+            #     config_dict['on_wakeword_detection_start'] = self.on_key
+            #     config_dict['on_wakeword_detection_end'] = self.on_key
             self._recorder = AudioToTextRecorder(**config_dict)
         except Exception as e:
             raise RuntimeError(f"Failed to initialize RealtimeSTT recorder: {e}") from e

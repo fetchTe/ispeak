@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # main entry point for code_speak
 
 import sys
