@@ -26,7 +26,7 @@ def key_to_str(ikey: str | Key | KeyCode | None) -> str:
     Convert pynput key to string representation
 
     Args:
-        key: Key from pynput keyboard listener
+        ikey: Key from pynput keyboard listener
     Returns:
         String representation of the key
     """
@@ -34,9 +34,8 @@ def key_to_str(ikey: str | Key | KeyCode | None) -> str:
         return ""
 
     # enum key/value check like 'esc' which in turn is transformed to <65307>
-    if isinstance(ikey, str):
-        if hasattr(Key, ikey):
-            ikey = Key[ikey].value
+    if isinstance(ikey, str) and hasattr(Key, ikey):
+        ikey = Key[ikey].value
 
     if isinstance(ikey, KeyCode):
         if ikey.char:
@@ -170,13 +169,8 @@ class CodeSpeakConfig:
     replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output
     delete_keywords: list[str] | bool | None = True
-    # use a list of backspace's with pyautogui.press -> faster, but not as accurate
-    fast_delete: bool = True
     # removes extra white space (an extra space is always added to end)
     strip_whitespace: bool = True
-    # pyautogui - interval in between each press (in seconds) - if experiancing
-    # typeing/output issues like partial outputs bump this value up
-    pyautogui_interval: float | int = 0.0
 
     def __post_init__(self) -> None:
         # set default delete keywords if not provided

@@ -3,8 +3,8 @@ import time
 from collections.abc import Callable
 from datetime import datetime
 
-import pyautogui
 from pynput import keyboard
+from pynput.keyboard import Key, Controller
 from rich.console import Console
 
 from .config import AppConfig
@@ -155,11 +155,8 @@ class VoiceInput:
         time.sleep(self.config.code_speak.push_to_talk_key_delay)
 
         # type recording indicator
-        if self.config.code_speak.no_typing != True:
-            pyautogui.typewrite(
-                self.config.code_speak.recording_indicator,
-                self.config.code_speak.pyautogui_interval,
-            )
+        if not self.config.code_speak.no_typing:
+            Controller().type(self.config.code_speak.recording_indicator)
 
         # start recorder
         try:
@@ -210,14 +207,9 @@ class VoiceInput:
         """Handles actual backspace of chars"""
         if not chars_to_delete or self.config.code_speak.no_typing:
             return
-        if self.config.code_speak.fast_delete:
-            # use array of backspace keys for faster deletion
-            backspace_keys = ["backspace"] * chars_to_delete
-            pyautogui.press(backspace_keys, interval=self.config.code_speak.pyautogui_interval)
-            return
-        # loop for individual key presses - much slower but may be more accurate in some envs
+        cont = Controller()
         for _ in range(chars_to_delete):
-            pyautogui.press("backspace", interval=self.config.code_speak.pyautogui_interval)
+            cont.tap(Key.backspace.value)
 
     def _handle_delete_indicator(self) -> None:
         """Handle delete of rec indicator"""
@@ -305,11 +297,9 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
                 end=""
             )
 
-        if config.code_speak.no_typing != True:
+        if not config.code_speak.no_typing:
             try:
-                # for whatever reason, adding an extra space at the end resolves
-                # a handful of pyautogui.typewrite glitches/hiccups
-                pyautogui.typewrite(text + " ")
+                Controller().type(text + " ")
             except Exception as e:
                 console.print(f"[red][bold][ERROR][/bold] typing text: {e}[/red]")
 

@@ -151,20 +151,6 @@ def setup_voice(config_manager: ConfigManager) -> None:
             ]
     time.sleep(1)
 
-    # configure fast delete
-    print_option_header(
-        console,
-        "fast_delete",
-        "use multiple backspaces with pyautogui.press - faster but less accurate",
-        str(config.code_speak.fast_delete),
-    )
-    console.print(
-        "\n[bold][blue]>[/blue][/bold] [white]enable fast delete mode? [dim](true/false)[/dim][/white]"
-    )
-    fast_delete = Confirm.ask("[bold]>[/bold]", default=config.code_speak.fast_delete)
-    config.code_speak.fast_delete = fast_delete
-    time.sleep(1)
-
     # configure strip whitespace
     print_option_header(
         console,
@@ -177,20 +163,6 @@ def setup_voice(config_manager: ConfigManager) -> None:
     )
     strip_whitespace = Confirm.ask("[bold]>[/bold]", default=config.code_speak.strip_whitespace)
     config.code_speak.strip_whitespace = strip_whitespace
-    time.sleep(1)
-
-    # configure pyautogui interval
-    print_option_header(
-        console,
-        "pyautogui_interval",
-        "interval between each keypress - increase if experiencing typing/output issues",
-        f"{config.code_speak.pyautogui_interval} seconds",
-    )
-    console.print(
-        f"\n[bold][blue]>[/blue][/bold] [white]enter interval in seconds {OR_ENTER}[/white]"
-    )
-    interval = FloatPrompt.ask("[bold]>[/bold]", default=config.code_speak.pyautogui_interval)
-    config.code_speak.pyautogui_interval = interval
     time.sleep(1)
 
     # configure language
@@ -295,7 +267,6 @@ def test_voice(config: AppConfig) -> None:
 def show_config(config_manager: ConfigManager) -> None:
     """Display current configuration"""
     console = Console()
-
     try:
         config = config_manager.load_config()
 
