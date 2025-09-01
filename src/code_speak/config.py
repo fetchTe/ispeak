@@ -156,6 +156,8 @@ class CodeSpeakConfig:
     escape_key: str | None = key_to_str(Key.esc.value)
     # char/word outputed when recording starts
     recording_indicator: str = ";"
+    # path to log file for voice transcriptions
+    log: str | None = None
     # list of words/phrases, when detected will delete previous output
     delete_keywords: list[str] | bool | None = True
     # use a list of backspace's with pyautogui.press -> faster, but not as accurate
