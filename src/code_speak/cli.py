@@ -19,7 +19,7 @@ def main() -> int:
     # our specific arguments
     parser.add_argument("-b", "--binary", help="Executable to launch with voice input (default from config)")
     parser.add_argument("-c", "--config", help="Path to configuration file")
-    parser.add_argument("-l", "--log", help="Path to log file for voice transcriptions (append log)")
+    parser.add_argument("-l", "--log-file", help="Path to log file for voice transcriptions (append log)")
     parser.add_argument("-n", "--no-typing", action="store_true", help="Disable typing output and indicator")
     parser.add_argument("-s", "--setup", action="store_true", help="Configure voice settings")
     parser.add_argument("-t", "--test", action="store_true", help="Test voice input functionality")
@@ -33,8 +33,8 @@ def main() -> int:
     config = config_manager.load_config()
 
     # apply CLI overrides
-    if our_args.log:
-        config.code_speak.log = our_args.log
+    if our_args.log_file:
+        config.code_speak.log_file = our_args.log_file
     if our_args.no_typing:
         config.code_speak.no_typing = our_args.no_typing
 
