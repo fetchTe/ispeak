@@ -1,5 +1,7 @@
+import subprocess
 import time
 from collections.abc import Callable
+from datetime import datetime
 
 import pyautogui
 from pynput import keyboard
@@ -251,3 +253,91 @@ class VoiceInput:
     def __del__(self) -> None:
         # ensure cleanup on deletion
         self.stop()
+
+
+def run_with_bin(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
+    """
+    Run bin/executable with voice integration
+
+    Args:
+        bin_args: Arguments to pass to bin command.
+        bin_cli: Override executable from command line.
+        config: Application configuration with CLI overrides applied.
+
+    Returns:
+        Exit code from bin execution.
+    """
+    console = Console()
+
+    console.print("\n[bold][red]◉[/red] [cyan]Code Speak Init[/cyan][/bold]\n")
+
+    voice_enabled = False
+    voice_input = None
+
+    executable = bin_cli or config.code_speak.binary
+    log_print = None if executable else True
+
+    def handle_voice_text(text: str) -> None:
+        """Handle transcribed text by typing it"""
+        # log transcription if log file specified
+        timestamp = datetime.now().isoformat(timespec='seconds')
+        if config.code_speak.log_file:
+            try:
+                with open(config.code_speak.log_file, 'a', encoding='utf-8') as f:
+                    f.write(f"## {timestamp}\n{text}\n\n")
+            except Exception as e:
+                console.print(f"[red][bold][ERROR][/bold] writing to log file: {e}[/red]")
+
+        if log_print:
+            # show styled version in terminal
+            console.print(
+                f"[dim][white]## [/white][blue]{timestamp}[/blue][/dim]\n{text}\n\n",
+                end=""
+            )
+
+        if not config.code_speak.no_typing:
+            try:
+                # for whatever reason, adding an extra space at the end resolves
+                # a handful of pyautogui.typewrite glitches/hiccups
+                pyautogui.typewrite(text + " ")
+            except Exception as e:
+                console.print(f"[red][bold][ERROR][/bold] typing text: {e}[/red]")
+
+    # try to start voice input
+    try:
+        voice_input = VoiceInput(config)
+        voice_input.start(handle_voice_text)
+        voice_enabled = True
+
+    except Exception as e:
+        console.print(f"[yellow]Could not start voice input: {e}[/yellow]")
+        console.print("[yellow]Continuing without voice support...[/yellow]")
+
+    cmd = []
+    try:
+        # build command and run binary
+        cmd = [executable, *bin_args]
+        console.print("\n[cyan][bold]> {}[/cyan]".format(" ".join(cmd)))
+        result = subprocess.run(cmd)
+        return_code = result.returncode
+
+    except KeyboardInterrupt:
+        return_code = 0
+    except FileNotFoundError:
+        console.print(
+            f"[red][bold][ERROR][/bold] '{cmd[0] if cmd else 'binary'}' command not found."
+            " Make sure it is installed and in PATH.[/red]"
+        )
+        return_code = 1
+    except Exception as e:
+        console.print(f"[red][bold][ERROR][/bold] running binary tool: {e}[/red]")
+        return_code = 1
+    finally:
+        # clean up voice input
+        if voice_enabled and voice_input:
+            try:
+                voice_input.stop()
+            except Exception:
+                pass  # ignore cleanup errors
+
+    return return_code
