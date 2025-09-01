@@ -12,7 +12,7 @@ from pynput.keyboard import Key, KeyCode
 from rich.console import Console
 from rich.prompt import Confirm, FloatPrompt, Prompt
 
-from .config import VALID_MODELS, ConfigManager, key_to_str
+from .config import VALID_MODELS, AppConfig, ConfigManager, key_to_str
 from .core import VoiceInput
 
 OR_ENTER = "[dim](press 'enter' to keep current)[/dim]"
@@ -50,10 +50,9 @@ def capture_key(console: Console, prompt_text: str) -> str | None:
         return captured_key if captured_key != "enter" else None
 
 
-def setup_voice(config_path: str | None = None) -> None:
+def setup_voice(config_manager: ConfigManager) -> None:
     """Interactive configuration for voice settings"""
     console = Console()
-    config_manager = ConfigManager(Path(config_path) if config_path else None)
     config = config_manager.load_config()
 
     time.sleep(1)
@@ -258,7 +257,7 @@ def setup_voice(config_path: str | None = None) -> None:
         sys.exit(1)
 
 
-def test_voice(config_path: str | None = None) -> None:
+def test_voice(config: AppConfig) -> None:
     """Test voice input functionality"""
     console = Console()
     console.print("[yellow][bold]Voice Input Test[/bold][/yellow]")
@@ -270,7 +269,7 @@ def test_voice(config_path: str | None = None) -> None:
 
     voice_input = None
     try:
-        voice_input = VoiceInput(config_path)
+        voice_input = VoiceInput(config)
         voice_input.start(handle_test_text)
 
         console.print("\n[yellow][bold]Instructions (ctrl+c to stop test)[/bold][/yellow]")
@@ -299,10 +298,9 @@ def test_voice(config_path: str | None = None) -> None:
         console.print("\n[yellow]Test completed[/yellow]")
 
 
-def show_config(config_path: str | None = None) -> None:
+def show_config(config_manager: ConfigManager) -> None:
     """Display current configuration"""
     console = Console()
-    config_manager = ConfigManager(Path(config_path) if config_path else None)
 
     try:
         config = config_manager.load_config()
@@ -323,20 +321,14 @@ def show_config(config_path: str | None = None) -> None:
         sys.exit(1)
 
 
-def run_with_bin(
- bin_args: list,
- bin_cli: str | None = None,
- config_path: str | None = None,
- log_file: str | None = None
-) -> int:
+def run_with_bin(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     """
     Run bin/executable with voice integration
 
     Args:
         bin_args: Arguments to pass to bin command.
         bin_cli: Override executable from command line.
-        config_path: Path to config file.
-        log_file: Path to log file for transcriptions.
+        config: Application configuration with CLI overrides applied.
 
     Returns:
         Exit code from bin execution.
@@ -348,50 +340,38 @@ def run_with_bin(
     voice_enabled = False
     voice_input = None
 
-    config_manager = ConfigManager(Path(config_path) if config_path else None)
-    config = config_manager.load_config()
     executable = bin_cli or config.code_speak.binary
-    log = log_file if log_file else config.code_speak.log
     log_print = None if executable else True
-
-    def log_format(content: str = "", stylize: bool = False) -> str:
-        """Format content for markdown logging"""
-        timestamp = datetime.now().isoformat(timespec='seconds')
-        if stylize:
-            return f"[dim][white]## [/white][blue]{timestamp}[/blue][/dim]\n{content}\n\n"
-        else:
-            return f"## {timestamp}\n{content}\n\n"
-
-    def handle_log(text: str) -> None:
-        """Handle logging transcribed text"""
-        if log:
-            try:
-                log_entry = log_format(text)
-                with open(log, 'a', encoding='utf-8') as f:
-                    f.write(log_entry)
-            except Exception as e:
-                console.print(f"[red][bold][ERROR][/bold] writing to log file: {e}[/red]")
-        if log_print:
-            # show styled version in terminal
-            console.print(log_format(text, stylize=True), end='')
-
-    def handle_type(text: str) -> None:
-        """Handle typing transcribed text"""
-        try:
-            # for whatever reason, adding an extra space at the end resolves
-            # a handful of pyautogui.typewrite glitches/hiccups
-            pyautogui.typewrite(text + " ")
-        except Exception as e:
-            console.print(f"[red][bold][ERROR][/bold] typing text: {e}[/red]")
 
     def handle_voice_text(text: str) -> None:
         """Handle transcribed text by typing it"""
-        handle_log(text)
-        handle_type(text)
+        # log transcription if log file specified
+        timestamp = datetime.now().isoformat(timespec='seconds')
+        if config.code_speak.log:
+            try:
+                with open(config.code_speak.log, 'a', encoding='utf-8') as f:
+                    f.write(f"## {timestamp}\n{text}\n\n")
+            except Exception as e:
+                console.print(f"[red][bold][ERROR][/bold] writing to log file: {e}[/red]")
+
+        if log_print:
+            # show styled version in terminal
+            console.print(
+                f"[dim][white]## [/white][blue]{timestamp}[/blue][/dim]\n{text}\n\n",
+                end=""
+            )
+
+        if not config.code_speak.no_typing:
+            try:
+                # for whatever reason, adding an extra space at the end resolves
+                # a handful of pyautogui.typewrite glitches/hiccups
+                pyautogui.typewrite(text + " ")
+            except Exception as e:
+                console.print(f"[red][bold][ERROR][/bold] typing text: {e}[/red]")
 
     # try to start voice input
     try:
-        voice_input = VoiceInput(config_path)
+        voice_input = VoiceInput(config)
         voice_input.start(handle_voice_text)
         voice_enabled = True
 
@@ -440,6 +420,7 @@ def main() -> int:
     parser.add_argument("-b", "--binary", help="Executable to launch with voice input (default from config)")
     parser.add_argument("-c", "--config", help="Path to configuration file")
     parser.add_argument("-l", "--log", help="Path to log file for voice transcriptions (append log)")
+    parser.add_argument("-n", "--no-typing", action="store_true", help="Disable typing output and indicator")
     parser.add_argument("-s", "--setup", action="store_true", help="Configure voice settings")
     parser.add_argument("-t", "--test", action="store_true", help="Test voice input functionality")
     parser.add_argument("--config-show", action="store_true", help="Show current configuration")
@@ -447,21 +428,40 @@ def main() -> int:
     # parse known args to separate ours from executable tool's
     our_args, bin_args = parser.parse_known_args()
 
+    # load config once and apply CLI overrides
+    config_manager = ConfigManager(Path(our_args.config) if our_args.config else None)
+    config = config_manager.load_config()
+
+    # apply CLI overrides
+    if our_args.log:
+        config.code_speak.log = our_args.log
+    if our_args.no_typing:
+        config.code_speak.no_typing = our_args.no_typing
+
+    # validate configuration
+    errors = config_manager.validate_config(config)
+    if errors:
+        console = Console()
+        console.print("\n[red][bold]ERROR[/bold] Configuration validation errors:[/red]")
+        for error in errors:
+            print(f"  - {error}")
+        console.print("[yellow][bold]NOTE[/bold] Using default values for invalid settings[/yellow]")
+
     # handle our specific commands
     if our_args.setup:
-        setup_voice(our_args.config)
+        setup_voice(config_manager)
         return 0
 
     if our_args.test:
-        test_voice(our_args.config)
+        test_voice(config)
         return 0
 
     if our_args.config_show:
-        show_config(our_args.config)
+        show_config(config_manager)
         return 0
 
     # if no specific command, run with executable tool integration
-    return run_with_bin(bin_args, our_args.binary, our_args.config, our_args.log)
+    return run_with_bin(bin_args, our_args.binary, config)
 
 
 if __name__ == "__main__":

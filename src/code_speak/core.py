@@ -1,12 +1,11 @@
 import time
 from collections.abc import Callable
-from pathlib import Path
 
 import pyautogui
 from pynput import keyboard
 from rich.console import Console
 
-from .config import AppConfig, ConfigManager
+from .config import AppConfig
 from .recorder import AudioRecorder, RealtimeSTTRecorder
 
 
@@ -63,19 +62,10 @@ class TextProcessor:
 class VoiceInput:
     """Main voice input handler for AI code generation tools"""
 
-    def __init__(self, config_path: str | None = None) -> None:
-        # load configuration
-        config_manager = ConfigManager(Path(config_path) if config_path else None)
-        self.config = config_manager.load_config()
+    def __init__(self, config: AppConfig) -> None:
+        # use provided configuration
+        self.config = config
         self.console = Console()
-
-        # validate configuration
-        errors = config_manager.validate_config(self.config)
-        if errors:
-            self.console.print("\n[red][bold]ERROR[/bold] Configuration validation errors:[/red]")
-            for error in errors:
-                print(f"  - {error}")
-            self.console.print("[yellow][bold]NOTE[/bold] Using default values for invalid settings[/yellow]")
 
         # initialize components
         self.text_processor = TextProcessor(self.config)
@@ -155,10 +145,11 @@ class VoiceInput:
         time.sleep(self.config.code_speak.push_to_talk_key_delay)
 
         # type recording indicator
-        pyautogui.typewrite(
-            self.config.code_speak.recording_indicator,
-            self.config.code_speak.pyautogui_interval,
-        )
+        if not self.config.code_speak.no_typing:
+            pyautogui.typewrite(
+                self.config.code_speak.recording_indicator,
+                self.config.code_speak.pyautogui_interval,
+            )
 
         # start recorder
         try:
@@ -207,7 +198,7 @@ class VoiceInput:
 
     def _handle_delete(self, chars_to_delete: int = 0) -> None:
         """Handles actual backspace of chars"""
-        if not chars_to_delete:
+        if not chars_to_delete or not self.config.code_speak.no_typing:
             return
         if self.config.code_speak.fast_delete:
             # use array of backspace keys for faster deletion

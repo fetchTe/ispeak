@@ -158,6 +158,8 @@ class CodeSpeakConfig:
     recording_indicator: str = ";"
     # path to log file for voice transcriptions
     log: str | None = None
+    # disable typing output and recording indicator (disables pyautogui)
+    no_typing: bool = False
     # list of words/phrases, when detected will delete previous output
     delete_keywords: list[str] | bool | None = True
     # use a list of backspace's with pyautogui.press -> faster, but not as accurate
