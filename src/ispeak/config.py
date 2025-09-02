@@ -165,7 +165,7 @@ class CodeSpeakConfig:
     # path to log file for voice transcriptions
     log_file: str | None = None
     # disable typing output and recording indicator (disables pyautogui)
-    no_typing: bool = False
+    no_output: bool = False
     # regex replacement rules - dict of patterns/replacements or list of file paths
     replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output

@@ -155,9 +155,6 @@ class VoiceInput:
         # brief delay required, otherwise typewrite won't fire properly
         time.sleep(self.config.ispeak.push_to_talk_key_delay)
 
-        # type recording indicator
-        if not self.config.ispeak.no_typing:
-            Controller().type(self.config.ispeak.recording_indicator)
 
         # start recorder
         try:
@@ -206,7 +203,7 @@ class VoiceInput:
 
     def _handle_delete(self, chars_to_delete: int = 0) -> None:
         """Handles actual backspace of chars"""
-        if not chars_to_delete or self.config.ispeak.no_typing:
+        if not chars_to_delete or self.config.ispeak.no_output:
             return
         cont = Controller()
         for _ in range(chars_to_delete):
@@ -295,7 +292,7 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
             # show styled version in terminal
             console.print(f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n", end="")
 
-        if not config.ispeak.no_typing:
+        if not config.ispeak.no_output:
             try:
                 Controller().type(text + " ")
             except Exception as e:

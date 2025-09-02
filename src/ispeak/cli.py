@@ -35,8 +35,8 @@ def main() -> int:
     # apply CLI overrides
     if our_args.log_file:
         config.ispeak.log_file = our_args.log_file
-    if our_args.no_typing:
-        config.ispeak.no_typing = our_args.no_typing
+    if our_args.no_output:
+        config.ispeak.no_output = our_args.no_output
 
     # validate configuration
     errors = config_manager.validate_config(config)
