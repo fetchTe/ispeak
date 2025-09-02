@@ -35,12 +35,12 @@ class TextReplacer:
                 print(f"Warning: Replace rules file not found: {file_path}")
                 return
 
-            with open(path, encoding='utf-8') as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
 
             if isinstance(data, dict):
-                if 'replace' in data and isinstance(data['replace'], dict):
-                    self._parse_rule_dict(data['replace'])
+                if "replace" in data and isinstance(data["replace"], dict):
+                    self._parse_rule_dict(data["replace"])
                 else:
                     self._parse_rule_dict(data)
             else:
@@ -67,22 +67,22 @@ class TextReplacer:
             Compiled regex pattern object
         """
         # check if pattern is in /pattern/flags format
-        if pattern.startswith('/') and pattern.count('/') >= 2:
+        if pattern.startswith("/") and pattern.count("/") >= 2:
             # parse /pattern/flags format
-            parts = pattern.split('/')
+            parts = pattern.split("/")
             if len(parts) >= 3:
-                regex_pattern = '/'.join(parts[1:-1])  # handle patterns with / inside
+                regex_pattern = "/".join(parts[1:-1])  # handle patterns with / inside
                 flags_str = parts[-1]
 
                 # convert flag characters to re flags
                 flags = 0
-                if 'i' in flags_str:
+                if "i" in flags_str:
                     flags |= re.IGNORECASE
-                if 'm' in flags_str:
+                if "m" in flags_str:
                     flags |= re.MULTILINE
-                if 's' in flags_str:
+                if "s" in flags_str:
                     flags |= re.DOTALL
-                if 'x' in flags_str:
+                if "x" in flags_str:
                     flags |= re.VERBOSE
 
                 return re.compile(regex_pattern, flags)

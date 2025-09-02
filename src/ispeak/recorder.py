@@ -7,6 +7,7 @@ from .config import RealtimeSTTConfig
 
 class AudioRecorder(Protocol):
     """Protocol for audio recorder implementations"""
+
     def start(self) -> None:
         """Start recording audio"""
         ...

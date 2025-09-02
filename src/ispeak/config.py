@@ -58,6 +58,7 @@ class RealtimeSTTConfig:
             to steal/change the focus from the active window to the cli/terminal -
             in x11 it's trivial with xdotool, but in wayland/ios it's best of luck!
     """
+
     # model and computation settings
     model: str | None = None
     download_root: str | None = None
@@ -330,12 +331,10 @@ class ConfigManager:
 
         # validate RealtimeSTT config
         model = config.realtime_stt.model
-        if (model is not None and model not in VALID_MODELS and
-            not Path(model).exists()):
+        if model is not None and model not in VALID_MODELS and not Path(model).exists():
             errors.append(f"Invalid model: {model}")
         realtime_model = config.realtime_stt.realtime_model_type
-        if (realtime_model is not None and realtime_model not in VALID_MODELS and
-            not Path(realtime_model).exists()):
+        if realtime_model is not None and realtime_model not in VALID_MODELS and not Path(realtime_model).exists():
             errors.append(f"Invalid realtime_model_type: {realtime_model}")
 
         # validate timing settings

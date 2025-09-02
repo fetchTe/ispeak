@@ -15,7 +15,7 @@ OR_ENTER = "[dim](press 'enter' to keep current)[/dim]"
 
 def print_option_header(console: Console, option_name: str, info: str, current_value: str) -> None:
     """Helper to print consistent option headers"""
-    console.print(f"\n[white][dim]{"-" * 90!s}[/dim][/white]")
+    console.print(f"\n[white][dim]{'-' * 90!s}[/dim][/white]")
     console.print(f"[bold]option [/bold]: [yellow][bold]{option_name}[/bold][/yellow]")
     console.print(f"[bold]info   [/bold]: {info}")
     console.print(f"[bold]current[/bold]: {current_value}")
@@ -57,9 +57,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
     if not binary:
         binary = "none"
     print_option_header(console, "binary", "default executable to launch with voice input", binary)
-    console.print(
-        f"\n[bold][blue]>[/blue][/bold] [white]enter executable binary/program, none, {OR_ENTER}[/white]"
-    )
+    console.print(f"\n[bold][blue]>[/blue][/bold] [white]enter executable binary/program, none, {OR_ENTER}[/white]")
     binary = Prompt.ask("[bold]>[/bold]", default=binary)
     config.ispeak.binary = binary
     time.sleep(1)
@@ -80,9 +78,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
         "execution delay after PTT key press (helps prevent mistypes)",
         f"{config.ispeak.push_to_talk_key_delay} seconds",
     )
-    console.print(
-        f"\n[bold][blue]>[/blue][/bold] [white]enter delay in seconds {OR_ENTER}[/white]"
-    )
+    console.print(f"\n[bold][blue]>[/blue][/bold] [white]enter delay in seconds {OR_ENTER}[/white]")
     delay = FloatPrompt.ask("[bold]>[/bold]", default=config.ispeak.push_to_talk_key_delay)
     config.ispeak.push_to_talk_key_delay = delay
     time.sleep(1)
@@ -106,9 +102,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
         "character/word output when recording starts",
         config.ispeak.recording_indicator,
     )
-    console.print(
-        f"\n[bold][blue]>[/blue][/bold] [white]enter new indicator {OR_ENTER}[/white]"
-    )
+    console.print(f"\n[bold][blue]>[/blue][/bold] [white]enter new indicator {OR_ENTER}[/white]")
     new_indicator = Prompt.ask("[bold]>[/bold]", default=config.ispeak.recording_indicator)
     if new_indicator:
         config.ispeak.recording_indicator = new_indicator
@@ -119,12 +113,10 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console,
         "delete_keywords",
         "words/phrases that, when detected, will delete previous output",
-        str(config.ispeak.delete_keywords)
+        str(config.ispeak.delete_keywords),
     )
     if isinstance(config.ispeak.delete_keywords, bool):
-        console.print(
-            "\n[bold][blue]>[/blue][/bold] [white]enable delete keywords? [dim](true/false)[/dim][/white]"
-        )
+        console.print("\n[bold][blue]>[/blue][/bold] [white]enable delete keywords? [dim](true/false)[/dim][/white]")
         use_delete_keywords = Confirm.ask("[bold]>[/bold]", default=config.ispeak.delete_keywords)
         config.ispeak.delete_keywords = use_delete_keywords
     else:
@@ -144,9 +136,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
         if keywords_input.lower() in ["true", "false"]:
             config.ispeak.delete_keywords = keywords_input.lower() == "true"
         else:
-            config.ispeak.delete_keywords = [
-                kw.strip() for kw in keywords_input.split(",") if kw.strip()
-            ]
+            config.ispeak.delete_keywords = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
     time.sleep(1)
 
     # configure strip whitespace
@@ -156,9 +146,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
         "removes extra whitespace (an extra space is always added to end)",
         str(config.ispeak.strip_whitespace),
     )
-    console.print(
-        "\n[bold][blue]>[/blue][/bold] [white]enable whitespace stripping? [dim](true/false)[/dim][/white]"
-    )
+    console.print("\n[bold][blue]>[/blue][/bold] [white]enable whitespace stripping? [dim](true/false)[/dim][/white]")
     strip_whitespace = Confirm.ask("[bold]>[/bold]", default=config.ispeak.strip_whitespace)
     config.ispeak.strip_whitespace = strip_whitespace
     time.sleep(1)
@@ -182,9 +170,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
     console.print(
         "- [bold]options[/bold]: tiny (fastest, cpu), base (balanced), small (better accuracy), large (best accuracy)"
     )
-    console.print(
-        f"\n[bold][blue]>[/blue][/bold] [white]enter model size {OR_ENTER}[/white]"
-    )
+    console.print(f"\n[bold][blue]>[/blue][/bold] [white]enter model size {OR_ENTER}[/white]")
     model = Prompt.ask("[bold]>[/bold]", default=config.realtime_stt.model, choices=VALID_MODELS)
     config.realtime_stt.model = model
     time.sleep(1)
@@ -192,15 +178,11 @@ def setup_voice(config_manager: ConfigManager) -> None:
     # save configuration
     try:
         config_manager.save_config(config)
-        console.print(
-            f"\n[bold][cyan]Configuration Saved:[/cyan][/bold] {config_manager.config_path}"
-        )
+        console.print(f"\n[bold][cyan]Configuration Saved:[/cyan][/bold] {config_manager.config_path}")
         console.print("\n[bold][cyan]>> ispeak[/cyan][/bold]")
         console.print(f"  binary                 : [blue]{config.ispeak.binary}[/blue]")
         console.print(f"  push_to_talk_key       : [blue]{config.ispeak.push_to_talk_key}[/blue]")
-        console.print(
-            f"  push_to_talk_key_delay : [blue]{config.ispeak.push_to_talk_key_delay}[/blue]s"
-        )
+        console.print(f"  push_to_talk_key_delay : [blue]{config.ispeak.push_to_talk_key_delay}[/blue]s")
         console.print(f"  escape_key             : [blue]{config.ispeak.escape_key}[/blue]")
         console.print(f"  recording_indicator    : [blue]{config.ispeak.recording_indicator}[/blue]")
         console.print(f"  delete_keywords        : [blue]{config.ispeak.delete_keywords}[/blue]")
@@ -229,14 +211,10 @@ def test_voice(config: AppConfig) -> None:
         voice_input.start(handle_test_text)
 
         console.print("\n[yellow][bold]Instructions (ctrl+c to stop test)[/bold][/yellow]")
-        console.print(
-            f"[yellow]  1. Press your PTT key {voice_input.config.ispeak.push_to_talk_key}[/yellow]"
-        )
+        console.print(f"[yellow]  1. Press your PTT key {voice_input.config.ispeak.push_to_talk_key}[/yellow]")
         console.print("[yellow]  2. Speak[/yellow]")
         console.print("[yellow]  3. Press your PTT key again[/yellow]")
-        console.print(
-            "[yellow]  4. If successful, the transcribed text should then be displayed[/yellow]\n"
-        )
+        console.print("[yellow]  4. If successful, the transcribed text should then be displayed[/yellow]\n")
 
         # keep running until interrupted
         try:
@@ -267,8 +245,7 @@ def show_config(config_manager: ConfigManager) -> None:
         }
 
         console.print(
-            f"[bold]Configuration File:[/bold] {config_manager.config_path}\n\n"
-            f"\n{json.dumps(config_dict, indent=2)}\n"
+            f"[bold]Configuration File:[/bold] {config_manager.config_path}\n\n\n{json.dumps(config_dict, indent=2)}\n"
         )
 
     except Exception as e:

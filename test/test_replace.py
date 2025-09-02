@@ -30,10 +30,7 @@ class TestBasicStringReplacement:
 
     def test_simple_string_replacement(self) -> None:
         """Test simple string to string replacement"""
-        rules = {
-            "hello": "hi",
-            "world": "universe"
-        }
+        rules = {"hello": "hi", "world": "universe"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("hello world") == "hi universe"
@@ -43,9 +40,7 @@ class TestBasicStringReplacement:
 
     def test_whitespace_replacement(self) -> None:
         """Test replacement of whitespace patterns"""
-        rules = {
-            " white space ": " WHITESPACE "
-        }
+        rules = {" white space ": " WHITESPACE "}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("test white space test") == "test WHITESPACE test"
@@ -53,9 +48,7 @@ class TestBasicStringReplacement:
 
     def test_case_sensitive_replacement(self) -> None:
         """Test that replacements are case sensitive by default"""
-        rules = {
-            "Example": "EXAMPLE"
-        }
+        rules = {"Example": "EXAMPLE"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("Example") == "EXAMPLE"
@@ -64,10 +57,7 @@ class TestBasicStringReplacement:
 
     def test_multiple_replacements_same_text(self) -> None:
         """Test multiple replacements in the same text"""
-        rules = {
-            "cat": "dog",
-            "mouse": "cheese"
-        }
+        rules = {"cat": "dog", "mouse": "cheese"}
         replacer = TextReplacer(rules)
 
         result = replacer.apply_replacements("the cat chased the mouse")
@@ -75,10 +65,7 @@ class TestBasicStringReplacement:
 
     def test_overlapping_patterns(self) -> None:
         """Test behavior with overlapping patterns"""
-        rules = {
-            "test": "TEST",
-            "testing": "TESTING"
-        }
+        rules = {"test": "TEST", "testing": "TESTING"}
         replacer = TextReplacer(rules)
 
         # order matters - first rule applied wins
@@ -94,7 +81,7 @@ class TestRegexPatterns:
         """Test regex with metacharacters"""
         rules = {
             r"\s+": " ",  # multiple whitespace to single space
-            r"\d+": "NUM"  # any digits to NUM
+            r"\d+": "NUM",  # any digits to NUM
         }
         replacer = TextReplacer(rules)
 
@@ -106,7 +93,7 @@ class TestRegexPatterns:
         """Test regex character classes"""
         rules = {
             r"[aeiou]": "*",  # replace vowels with *
-            r"[0-9]+": "NUM"  # replace numbers with NUM
+            r"[0-9]+": "NUM",  # replace numbers with NUM
         }
         replacer = TextReplacer(rules)
 
@@ -127,10 +114,7 @@ class TestRegexPatterns:
 
     def test_question_mark_exclamation_examples(self) -> None:
         """Test the example patterns from requirements"""
-        rules = {
-            r"\s*question\s*mark\.?": "?",
-            r"\s*exclamation\s*mark\.?": "!"
-        }
+        rules = {r"\s*question\s*mark\.?": "?", r"\s*exclamation\s*mark\.?": "!"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("question mark") == "?"
@@ -145,9 +129,7 @@ class TestRegexWithFlags:
 
     def test_case_insensitive_flag(self) -> None:
         """Test /pattern/i for case insensitive matching"""
-        rules = {
-            "/hello/i": "HI"
-        }
+        rules = {"/hello/i": "HI"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("hello") == "HI"
@@ -157,9 +139,7 @@ class TestRegexWithFlags:
 
     def test_multiline_flag(self) -> None:
         """Test /pattern/m for multiline matching"""
-        rules = {
-            "/^start/m": "BEGIN"
-        }
+        rules = {"/^start/m": "BEGIN"}
         replacer = TextReplacer(rules)
 
         text = "not start\nstart of line"
@@ -168,9 +148,7 @@ class TestRegexWithFlags:
 
     def test_dotall_flag(self) -> None:
         """Test /pattern/s for dotall (. matches newline)"""
-        rules = {
-            "/start.*end/s": "REPLACED"
-        }
+        rules = {"/start.*end/s": "REPLACED"}
         replacer = TextReplacer(rules)
 
         text = "start\nmiddle\nend"
@@ -179,9 +157,7 @@ class TestRegexWithFlags:
 
     def test_multiple_flags(self) -> None:
         """Test multiple flags combined"""
-        rules = {
-            "/start.*end/ims": "REPLACED"
-        }
+        rules = {"/start.*end/ims": "REPLACED"}
         replacer = TextReplacer(rules)
 
         text = "START\nmiddle\nEND"
@@ -190,9 +166,7 @@ class TestRegexWithFlags:
 
     def test_comma_example_from_requirements(self) -> None:
         """Test the comma example from requirements"""
-        rules = {
-            r"/([\s+])(comma)([\s+])/gmi": ", "
-        }
+        rules = {r"/([\s+])(comma)([\s+])/gmi": ", "}
         replacer = TextReplacer(rules)
 
         # note: Python re doesn't support 'g' flag the same way as JS
@@ -202,10 +176,7 @@ class TestRegexWithFlags:
 
     def test_anchored_patterns(self) -> None:
         """Test anchored patterns from requirements"""
-        rules = {
-            "/^start/i": "START",
-            "/end$/i": "END"
-        }
+        rules = {"/^start/i": "START", "/end$/i": "END"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("start middle") == "START middle"
@@ -230,10 +201,7 @@ class TestSubstitutionGroups:
 
     def test_named_groups_syntax(self) -> None:
         r"""Test \g<n> group syntax from requirements"""
-        rules = {
-            r"(\s+)(semi)(\s+)": r";\g<3>",
-            r"(\s+)(comma)(\s+)": r",\g<3>"
-        }
+        rules = {r"(\s+)(semi)(\s+)": r";\g<3>", r"(\s+)(comma)(\s+)": r",\g<3>"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("word semi word") == "word; word"
@@ -245,7 +213,7 @@ class TestSubstitutionGroups:
         """Test complex group replacements"""
         rules = {
             r"(\d{4})-(\d{2})-(\d{2})": r"\3/\2/\1",  # date format change
-            r"([A-Z]+)\.([A-Z]+)\.([A-Z]+)": r"\1_\2_\3"  # dots to underscores
+            r"([A-Z]+)\.([A-Z]+)\.([A-Z]+)": r"\1_\2_\3",  # dots to underscores
         }
         replacer = TextReplacer(rules)
 
@@ -254,9 +222,7 @@ class TestSubstitutionGroups:
 
     def test_mixed_groups_and_literals(self) -> None:
         """Test mixing groups with literal text"""
-        rules = {
-            r"(\w+) says (\w+)": r"Quote: '\2' - \1"
-        }
+        rules = {r"(\w+) says (\w+)": r"Quote: '\2' - \1"}
         replacer = TextReplacer(rules)
 
         result = replacer.apply_replacements("John says hello")
@@ -264,9 +230,7 @@ class TestSubstitutionGroups:
 
     def test_optional_groups(self) -> None:
         """Test optional capture groups"""
-        rules = {
-            r"(\w+)(\.?)": r"\1_SUFFIX\2"
-        }
+        rules = {r"(\w+)(\.?)": r"\1_SUFFIX\2"}
         replacer = TextReplacer(rules)
 
         assert replacer.apply_replacements("word") == "word_SUFFIX"
@@ -280,7 +244,7 @@ class TestFileLoading:
         """Test loading rules from a single JSON file"""
         rules = {"test": "TEST", "hello": "hi"}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(rules, f)
             temp_file = f.name
 
@@ -296,11 +260,11 @@ class TestFileLoading:
         rules1 = {"file1": "FILE1"}
         rules2 = {"file2": "FILE2"}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f1:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f1:
             json.dump(rules1, f1)
             temp_file1 = f1.name
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f2:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f2:
             json.dump(rules2, f2)
             temp_file2 = f2.name
 
@@ -314,14 +278,9 @@ class TestFileLoading:
 
     def test_load_with_replace_key(self) -> None:
         """Test loading from file with 'replace' key wrapper"""
-        data = {
-            "replace": {
-                "wrapped": "WRAPPED"
-            },
-            "other_config": "ignored"
-        }
+        data = {"replace": {"wrapped": "WRAPPED"}, "other_config": "ignored"}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(data, f)
             temp_file = f.name
 
@@ -342,7 +301,7 @@ class TestFileLoading:
 
     def test_invalid_json_warning(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test warning with invalid JSON"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             f.write("invalid json content")
             temp_file = f.name
 
@@ -357,7 +316,7 @@ class TestFileLoading:
 
     def test_invalid_format_warning(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test warning with invalid format"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(["invalid", "format"], f)
             temp_file = f.name
 
@@ -378,7 +337,7 @@ class TestErrorHandling:
         """Test warning with invalid regex pattern"""
         rules = {
             "[invalid": "test",  # missing closing bracket
-            "valid": "VALID"
+            "valid": "VALID",
         }
 
         replacer = TextReplacer(rules)
@@ -474,13 +433,11 @@ class TestRealWorldExamples:
             r"\s*exclamation\s*mark\s*": "!",
             r"\s*semicolon\s*": ";",
             r"\s*colon\s*": ":",
-
             # code-specific replacements
             r"\s*open\s*paren\s*": "(",
             r"\s*close\s*paren\s*": ")",
             r"\s*open\s*brace\s*": "{",
             r"\s*close\s*brace\s*": "}",
-
             # common programming terms
             r"\bfunction\b": "def",
             r"\breturn\b": "return",
@@ -500,13 +457,10 @@ class TestRealWorldExamples:
         rules = {
             # normalize multiple spaces
             r"\s+": " ",
-
             # fix common spacing issues
             r"\s*([,.!?;:])\s*": r"\1 ",
-
             # remove trailing spaces before punctuation
             r"\s+([.!?])": r"\1",
-
             # capitalize after sentence endings
             r"([.!?])\s+([a-z])": r"\1 \u\2",
         }
@@ -530,12 +484,10 @@ class TestRealWorldExamples:
             r"\bdivided by\b": "/",
             r"\bgreater than\b": ">",
             r"\bless than\b": "<",
-
             # convert number words (simple examples)
             r"\bone\b": "1",
             r"\btwo\b": "2",
             r"\bthree\b": "3",
-
             # fix spacing around operators
             r"(\w)\s*=\s*(\w)": r"\1 = \2",
             r"(\w)\s*\+\s*(\w)": r"\1 + \2",
@@ -553,10 +505,7 @@ class TestEdgeCasesAndCornerCases:
 
     def test_circular_replacements(self) -> None:
         """Test that circular replacements don't cause infinite loops"""
-        rules = {
-            "cat": "dog",
-            "dog": "cat"
-        }
+        rules = {"cat": "dog", "dog": "cat"}
 
         replacer = TextReplacer(rules)
 
@@ -573,7 +522,7 @@ class TestEdgeCasesAndCornerCases:
         """Test replacement with empty string (deletion)"""
         rules = {
             "delete me": "",
-            r"\s+": "  "  # double space
+            r"\s+": "  ",  # double space
         }
 
         replacer = TextReplacer(rules)
@@ -583,14 +532,7 @@ class TestEdgeCasesAndCornerCases:
 
     def test_replacement_with_special_characters(self) -> None:
         """Test replacements containing special characters"""
-        rules = {
-            "amp": "&",
-            "lt": "<",
-            "gt": ">",
-            "quote": '"',
-            "newline": "\n",
-            "tab": "\t"
-        }
+        rules = {"amp": "&", "lt": "<", "gt": ">", "quote": '"', "newline": "\n", "tab": "\t"}
 
         replacer = TextReplacer(rules)
 
@@ -604,12 +546,7 @@ class TestEdgeCasesAndCornerCases:
 
     def test_unicode_text(self) -> None:
         """Test with Unicode text"""
-        rules = {
-            "café": "CAFÉ",
-            "naïve": "NAIVE",
-            "résumé": "RESUME",
-            "émoji": "🙂"
-        }
+        rules = {"café": "CAFÉ", "naïve": "NAIVE", "résumé": "RESUME", "émoji": "🙂"}
 
         replacer = TextReplacer(rules)
 
@@ -625,9 +562,7 @@ class TestEdgeCasesAndCornerCases:
         """Test with very long regex pattern"""
         # create a pattern that matches a very long specific string
         long_string = "very_long_pattern_" * 50
-        rules = {
-            long_string: "SHORT"
-        }
+        rules = {long_string: "SHORT"}
 
         replacer = TextReplacer(rules)
 
@@ -637,11 +572,7 @@ class TestEdgeCasesAndCornerCases:
 
     def test_null_bytes_and_control_characters(self) -> None:
         """Test handling of null bytes and control characters"""
-        rules = {
-            "null": "\x00",
-            "bell": "\x07",
-            "escape": "\x1b"
-        }
+        rules = {"null": "\x00", "bell": "\x07", "escape": "\x1b"}
 
         replacer = TextReplacer(rules)
 

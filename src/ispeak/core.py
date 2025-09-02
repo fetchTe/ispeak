@@ -65,7 +65,8 @@ class TextProcessor:
         if normalized.endswith("."):
             normalized = normalized[:-1]
         return normalized in [
-            keyword.lower() for keyword in delete_keywords  # type: ignore
+            keyword.lower()
+            for keyword in delete_keywords  # type: ignore
         ]
 
 
@@ -282,20 +283,17 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     def handle_voice_text(text: str) -> None:
         """Handle transcribed text by typing it"""
         # log transcription if log file specified
-        timestamp = datetime.now().isoformat(timespec='seconds')
+        timestamp = datetime.now().isoformat(timespec="seconds")
         if config.ispeak.log_file:
             try:
-                with open(config.ispeak.log_file, 'a', encoding='utf-8') as f:
+                with open(config.ispeak.log_file, "a", encoding="utf-8") as f:
                     f.write(f"## {timestamp}\n{text}\n\n")
             except Exception as e:
                 console.print(f"[red][bold][ERROR][/bold] writing to log file: {e}[/red]")
 
         if log_print:
             # show styled version in terminal
-            console.print(
-                f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n",
-                end=""
-            )
+            console.print(f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n", end="")
 
         if not config.ispeak.no_typing:
             try:
