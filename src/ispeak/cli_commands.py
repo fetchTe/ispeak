@@ -51,28 +51,26 @@ def setup_voice(config_manager: ConfigManager) -> None:
     config = config_manager.load_config()
 
     time.sleep(1)
-    console.print("\n[bold][red]◉[/red] [green]Code Speak Configuration[/green][/bold]")
+    console.print("\n[bold][red]◉[/red] [green]ispeak configuration[/green][/bold]")
 
-    print_option_header(
-        console, "binary", "default executable to launch with voice input", config.code_speak.binary
-    )
+    binary = config.ispeak.binary
+    if not binary:
+        binary = "none"
+    print_option_header(console, "binary", "default executable to launch with voice input", binary)
     console.print(
         f"\n[bold][blue]>[/blue][/bold] [white]enter executable binary/program, none, {OR_ENTER}[/white]"
     )
-    binary = config.code_speak.binary
-    if not len(config.code_speak.binary):
-        binary = "none"
-    binary = Prompt.ask("[bold]>[/bold]", default=config.code_speak.binary)
-    config.code_speak.binary = binary
+    binary = Prompt.ask("[bold]>[/bold]", default=binary)
+    config.ispeak.binary = binary
     time.sleep(1)
 
     # configure push-to-talk key
     print_option_header(
-        console, "push_to_talk_key", "key to initialize recording session", config.code_speak.push_to_talk_key
+        console, "push_to_talk_key", "key to initialize recording session", config.ispeak.push_to_talk_key
     )
     captured_key = capture_key(console, "press your desired PTT key")
     if captured_key:
-        config.code_speak.push_to_talk_key = captured_key
+        config.ispeak.push_to_talk_key = captured_key
     time.sleep(1)
 
     # configure push-to-talk key delay
@@ -80,13 +78,13 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console,
         "push_to_talk_key_delay",
         "execution delay after PTT key press (helps prevent mistypes)",
-        f"{config.code_speak.push_to_talk_key_delay} seconds",
+        f"{config.ispeak.push_to_talk_key_delay} seconds",
     )
     console.print(
         f"\n[bold][blue]>[/blue][/bold] [white]enter delay in seconds {OR_ENTER}[/white]"
     )
-    delay = FloatPrompt.ask("[bold]>[/bold]", default=config.code_speak.push_to_talk_key_delay)
-    config.code_speak.push_to_talk_key_delay = delay
+    delay = FloatPrompt.ask("[bold]>[/bold]", default=config.ispeak.push_to_talk_key_delay)
+    config.ispeak.push_to_talk_key_delay = delay
     time.sleep(1)
 
     # configure escape key
@@ -94,11 +92,11 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console,
         "escape_key",
         "key to escape current recording session without outputting transcription",
-        str(config.code_speak.escape_key),
+        str(config.ispeak.escape_key),
     )
     captured_escape_key = capture_key(console, "press your desired escape key")
     if captured_escape_key:
-        config.code_speak.escape_key = captured_escape_key
+        config.ispeak.escape_key = captured_escape_key
     time.sleep(1)
 
     # configure recording indicator
@@ -106,14 +104,14 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console,
         "recording_indicator",
         "character/word output when recording starts",
-        config.code_speak.recording_indicator,
+        config.ispeak.recording_indicator,
     )
     console.print(
         f"\n[bold][blue]>[/blue][/bold] [white]enter new indicator {OR_ENTER}[/white]"
     )
-    new_indicator = Prompt.ask("[bold]>[/bold]", default=config.code_speak.recording_indicator)
+    new_indicator = Prompt.ask("[bold]>[/bold]", default=config.ispeak.recording_indicator)
     if new_indicator:
-        config.code_speak.recording_indicator = new_indicator
+        config.ispeak.recording_indicator = new_indicator
     time.sleep(1)
 
     # configure delete keywords
@@ -121,14 +119,14 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console,
         "delete_keywords",
         "words/phrases that, when detected, will delete previous output",
-        str(config.code_speak.delete_keywords)
+        str(config.ispeak.delete_keywords)
     )
-    if isinstance(config.code_speak.delete_keywords, bool):
+    if isinstance(config.ispeak.delete_keywords, bool):
         console.print(
             "\n[bold][blue]>[/blue][/bold] [white]enable delete keywords? [dim](true/false)[/dim][/white]"
         )
-        use_delete_keywords = Confirm.ask("[bold]>[/bold]", default=config.code_speak.delete_keywords)
-        config.code_speak.delete_keywords = use_delete_keywords
+        use_delete_keywords = Confirm.ask("[bold]>[/bold]", default=config.ispeak.delete_keywords)
+        config.ispeak.delete_keywords = use_delete_keywords
     else:
         # if it's a list, show current keywords and allow editing
         console.print(
@@ -138,15 +136,15 @@ def setup_voice(config_manager: ConfigManager) -> None:
         keywords_input = Prompt.ask(
             "[bold]>[/bold]",
             default=(
-                ",".join(config.code_speak.delete_keywords)
-                if isinstance(config.code_speak.delete_keywords, list)
-                else str(config.code_speak.delete_keywords)
+                ",".join(config.ispeak.delete_keywords)
+                if isinstance(config.ispeak.delete_keywords, list)
+                else str(config.ispeak.delete_keywords)
             ),
         )
         if keywords_input.lower() in ["true", "false"]:
-            config.code_speak.delete_keywords = keywords_input.lower() == "true"
+            config.ispeak.delete_keywords = keywords_input.lower() == "true"
         else:
-            config.code_speak.delete_keywords = [
+            config.ispeak.delete_keywords = [
                 kw.strip() for kw in keywords_input.split(",") if kw.strip()
             ]
     time.sleep(1)
@@ -156,13 +154,13 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console,
         "strip_whitespace",
         "removes extra whitespace (an extra space is always added to end)",
-        str(config.code_speak.strip_whitespace),
+        str(config.ispeak.strip_whitespace),
     )
     console.print(
         "\n[bold][blue]>[/blue][/bold] [white]enable whitespace stripping? [dim](true/false)[/dim][/white]"
     )
-    strip_whitespace = Confirm.ask("[bold]>[/bold]", default=config.code_speak.strip_whitespace)
-    config.code_speak.strip_whitespace = strip_whitespace
+    strip_whitespace = Confirm.ask("[bold]>[/bold]", default=config.ispeak.strip_whitespace)
+    config.ispeak.strip_whitespace = strip_whitespace
     time.sleep(1)
 
     # configure language
@@ -197,24 +195,16 @@ def setup_voice(config_manager: ConfigManager) -> None:
         console.print(
             f"\n[bold][cyan]Configuration Saved:[/cyan][/bold] {config_manager.config_path}"
         )
-        console.print("\n[bold][cyan]>> code_speak[/cyan][/bold]")
-        console.print(f"  binary                 : [blue]{config.code_speak.binary}[/blue]")
-        console.print(f"  push_to_talk_key       : [blue]{config.code_speak.push_to_talk_key}[/blue]")
+        console.print("\n[bold][cyan]>> ispeak[/cyan][/bold]")
+        console.print(f"  binary                 : [blue]{config.ispeak.binary}[/blue]")
+        console.print(f"  push_to_talk_key       : [blue]{config.ispeak.push_to_talk_key}[/blue]")
         console.print(
-            f"  push_to_talk_key_delay : [blue]{config.code_speak.push_to_talk_key_delay}[/blue]s"
+            f"  push_to_talk_key_delay : [blue]{config.ispeak.push_to_talk_key_delay}[/blue]s"
         )
-        console.print(f"  escape_key             : [blue]{config.code_speak.escape_key}[/blue]")
-        console.print(
-            f"  recording_indicator    : [blue]{config.code_speak.recording_indicator}[/blue]"
-        )
-        console.print(
-            f"  delete_keywords        : [blue]{config.code_speak.delete_keywords}[/blue]"
-        )
-        console.print(f"  fast_delete            : [blue]{config.code_speak.fast_delete}[/blue]")
-        console.print(f"  strip_whitespace       : [blue]{config.code_speak.strip_whitespace}[/blue]")
-        console.print(
-            f"  pyautogui_interval     : [blue]{config.code_speak.pyautogui_interval}[/blue]s"
-        )
+        console.print(f"  escape_key             : [blue]{config.ispeak.escape_key}[/blue]")
+        console.print(f"  recording_indicator    : [blue]{config.ispeak.recording_indicator}[/blue]")
+        console.print(f"  delete_keywords        : [blue]{config.ispeak.delete_keywords}[/blue]")
+        console.print(f"  strip_whitespace       : [blue]{config.ispeak.strip_whitespace}[/blue]")
         console.print("\n[bold][cyan]>> realtime_stt[/cyan][/bold]")
         console.print(f"  language               : [blue]{config.realtime_stt.language}[/blue]")
         console.print(f"  model                  : [blue]{config.realtime_stt.model}[/blue]\n")
@@ -240,7 +230,7 @@ def test_voice(config: AppConfig) -> None:
 
         console.print("\n[yellow][bold]Instructions (ctrl+c to stop test)[/bold][/yellow]")
         console.print(
-            f"[yellow]  1. Press your PTT key {voice_input.config.code_speak.push_to_talk_key}[/yellow]"
+            f"[yellow]  1. Press your PTT key {voice_input.config.ispeak.push_to_talk_key}[/yellow]"
         )
         console.print("[yellow]  2. Speak[/yellow]")
         console.print("[yellow]  3. Press your PTT key again[/yellow]")
@@ -273,7 +263,7 @@ def show_config(config_manager: ConfigManager) -> None:
         # convert to JSON for display
         config_dict = {
             "realtime_stt": config.realtime_stt.__dict__,
-            "code_speak": config.code_speak.__dict__,
+            "ispeak": config.ispeak.__dict__,
         }
 
         console.print(

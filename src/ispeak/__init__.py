@@ -1,7 +1,4 @@
-"""
-code_speak - A speech-to-text library that provides seamless voice input integration
-with AI cli's: claude code, codex, aider, and the like
-"""
+# ispeak - a keyboard-centric CLI speech-to-text tool that works wherever you can type
 
 from .config import AppConfig, CodeSpeakConfig, ConfigManager, RealtimeSTTConfig
 from .core import TextProcessor, VoiceInput

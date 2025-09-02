@@ -1,0 +1,22 @@
+{
+  "ispeak": {
+    "binary": "",
+    "push_to_talk_key": "end",
+    "push_to_talk_key_delay": 0.2,
+    "escape_key": "esc",
+    "log_file": null,
+    "no_typing": false,
+    "recording_indicator": ";",
+    "delete_keywords": ["delete", "undo"],
+    "strip_whitespace": true
+  },
+  "realtime_stt": {
+    "language": "auto",
+    "model": "base",
+    "post_speech_silence_duration": 1.0,
+    "silero_use_onnx": true,
+    "spinner": false,
+    "use_main_model_for_realtime": true
+  },
+  "replace": null
+}

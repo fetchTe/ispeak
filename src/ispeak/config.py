@@ -188,12 +188,12 @@ class AppConfig:
     """Main application configuration"""
 
     realtime_stt: RealtimeSTTConfig
-    code_speak: CodeSpeakConfig
+    ispeak: CodeSpeakConfig
 
     @classmethod
     def default(cls) -> "AppConfig":
         """Create default configuration"""
-        return cls(realtime_stt=RealtimeSTTConfig(), code_speak=CodeSpeakConfig())
+        return cls(realtime_stt=RealtimeSTTConfig(), ispeak=CodeSpeakConfig())
 
 
 class ConfigManager:
@@ -205,26 +205,26 @@ class ConfigManager:
 
         Args:
             config_path:
-              1. CODE_SPEAK_CONFIG env var
-              2. env specific config (<config>/code_speak/code_speak.json)
+              1. ISPEAK_CONFIG env var
+              2. env specific config (<config>/ispeak/ispeak.json)
                  - macOS: ~/Library/Preferences
                  - Windows: %APPDATA% (or ~/AppData/Roaming as fallback)
                  - Linux: $XDG_CONFIG_HOME (or ~/.config as fallback per XDG Base Directory spec)
-              3. ./code_speak.json
+              3. ./ispeak.json
         """
         if config_path is None:
             # check environment variable first
-            env_config_path = os.getenv("CODE_SPEAK_CONFIG")
+            env_config_path = os.getenv("ISPEAK_CONFIG")
             if env_config_path:
                 config_path = Path(env_config_path)
             else:
                 # check default config directory using cross-platform function
-                default_config_path = self.get_config_dir() / "code_speak" / "code_speak.json"
+                default_config_path = self.get_config_dir() / "ispeak" / "ispeak.json"
                 if default_config_path.exists():
                     config_path = default_config_path
                 else:
                     # fallback to current directory
-                    config_path = Path("./code_speak.json").resolve()
+                    config_path = Path("./ispeak.json").resolve()
         self.config_path = config_path
 
     def get_config_dir(self) -> Path:
@@ -276,10 +276,10 @@ class ConfigManager:
             realtime_stt._extra_config = extra_config
 
             # parse CodeSpeak config
-            code_speak_data = data.get("code_speak", {})
-            code_speak = CodeSpeakConfig(**code_speak_data)
+            ispeak_data = data.get("ispeak", {})
+            ispeak = CodeSpeakConfig(**ispeak_data)
 
-            return AppConfig(realtime_stt=realtime_stt, code_speak=code_speak)
+            return AppConfig(realtime_stt=realtime_stt, ispeak=ispeak)
         except (json.JSONDecodeError, TypeError, KeyError) as e:
             # on any configuration error, return default and warn
             print(f"Warning: Failed to load configuration from {self.config_path}: {e}")
@@ -305,7 +305,7 @@ class ConfigManager:
 
         data = {
             "realtime_stt": realtime_stt_dict,
-            "code_speak": asdict(config.code_speak),
+            "ispeak": asdict(config.ispeak),
         }
 
         with open(self.config_path, "w") as f:
@@ -322,10 +322,10 @@ class ConfigManager:
         """
         errors = []
 
-        # validate code_speak config
-        if not config.code_speak.push_to_talk_key:
+        # validate ispeak config
+        if not config.ispeak.push_to_talk_key:
             errors.append("push_to_talk_key cannot be empty")
-        if not config.code_speak.recording_indicator:
+        if not config.ispeak.recording_indicator:
             errors.append("recording_indicator cannot be empty")
 
         # validate RealtimeSTT config

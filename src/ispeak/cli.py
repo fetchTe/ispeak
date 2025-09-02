@@ -12,7 +12,7 @@ from .core import runner
 def main() -> int:
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="Code Speak Voice Input",
+        description="ispeak voice input",
         add_help=False,  # we'll handle help ourselves
     )
 
@@ -34,9 +34,9 @@ def main() -> int:
 
     # apply CLI overrides
     if our_args.log_file:
-        config.code_speak.log_file = our_args.log_file
+        config.ispeak.log_file = our_args.log_file
     if our_args.no_typing:
-        config.code_speak.no_typing = our_args.no_typing
+        config.ispeak.no_typing = our_args.no_typing
 
     # validate configuration
     errors = config_manager.validate_config(config)
@@ -62,7 +62,7 @@ def main() -> int:
 
     # check for help in binary-less mode
     if "--help" in bin_args or "-h" in bin_args:
-        executable = our_args.binary or config.code_speak.binary
+        executable = our_args.binary or config.ispeak.binary
         if not executable:  # binary-less mode
             parser.print_help()
             return 0

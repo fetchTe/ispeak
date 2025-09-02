@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.code_speak.replace import TextReplacer
+from src.ispeak.replace import TextReplacer
 
 
 class TestTextReplacer:

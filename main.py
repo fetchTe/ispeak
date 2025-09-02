@@ -1,8 +1,8 @@
-# main entry point for code_speak
+# main entry point for ispeak
 
 import sys
 
-from code_speak.cli import main
+from ispeak.cli import main
 
 if __name__ == "__main__":
     sys.exit(main())

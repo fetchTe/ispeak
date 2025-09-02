@@ -4,7 +4,7 @@ from collections.abc import Callable
 from datetime import datetime
 
 from pynput import keyboard
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Controller, Key
 from rich.console import Console
 
 from .config import AppConfig
@@ -23,7 +23,7 @@ class TextProcessor:
             config: Application configuration
         """
         self.config = config
-        self.replacer = TextReplacer(config.code_speak.replace) if config.code_speak.replace else None
+        self.replacer = TextReplacer(config.ispeak.replace) if config.ispeak.replace else None
 
     def process_text(self, text: str) -> str:
         """
@@ -39,7 +39,7 @@ class TextProcessor:
         processed = text
 
         # strip probs not needed in most/all cases
-        if self.config.code_speak.strip_whitespace:
+        if self.config.ispeak.strip_whitespace:
             processed = processed.strip()
 
         # apply regex replacements
@@ -57,7 +57,7 @@ class TextProcessor:
         Returns:
             True if text matches a delete keyword
         """
-        delete_keywords = self.config.code_speak.delete_keywords
+        delete_keywords = self.config.ispeak.delete_keywords
         if not delete_keywords:
             return False
         # normalized and remove end period
@@ -110,16 +110,16 @@ class VoiceInput:
         self.on_text = on_text
 
         # show startup message
-        self.console.print("\n[bold][red]◉[/red] [cyan]Code Speak Active[/cyan][/bold]")
-        self.console.print(f"[blue]  Model       : {self.config.realtime_stt.model}[/blue]")
-        self.console.print(f"[blue]  Language    : {self.config.realtime_stt.language or 'auto'}[/blue]")
-        self.console.print(f"[blue]  Push-to-Talk: {self.config.code_speak.push_to_talk_key}[/blue]")
+        self.console.print("\n[bold][red]◉[/red] [cyan]ispeak active[/cyan][/bold]")
+        self.console.print(f"[blue]  model       : {self.config.realtime_stt.model}[/blue]")
+        self.console.print(f"[blue]  language    : {self.config.realtime_stt.language or 'auto'}[/blue]")
+        self.console.print(f"[blue]  push-to-talk: {self.config.ispeak.push_to_talk_key}[/blue]")
 
         # start keyboard listener for push-to-talk
-        hot_rec = {self.config.code_speak.push_to_talk_key: self._on_key_press_hotkey}
+        hot_rec = {self.config.ispeak.push_to_talk_key: self._on_key_press_hotkey}
         # add esc if present
-        if self.config.code_speak.escape_key:
-            hot_rec[self.config.code_speak.escape_key] = self._on_key_press_esckey
+        if self.config.ispeak.escape_key:
+            hot_rec[self.config.ispeak.escape_key] = self._on_key_press_esckey
         # https://pynput.readthedocs.io/en/latest/keyboard-usage.html#global-hotkeys
         self.listener = keyboard.GlobalHotKeys(hot_rec)
         self.listener.start()
@@ -152,11 +152,11 @@ class VoiceInput:
 
         self.recording = True
         # brief delay required, otherwise typewrite won't fire properly
-        time.sleep(self.config.code_speak.push_to_talk_key_delay)
+        time.sleep(self.config.ispeak.push_to_talk_key_delay)
 
         # type recording indicator
-        if not self.config.code_speak.no_typing:
-            Controller().type(self.config.code_speak.recording_indicator)
+        if not self.config.ispeak.no_typing:
+            Controller().type(self.config.ispeak.recording_indicator)
 
         # start recorder
         try:
@@ -174,7 +174,7 @@ class VoiceInput:
 
         self.recording = False
         # brief delay required, otherwise typewrite won't fire properly
-        time.sleep(self.config.code_speak.push_to_talk_key_delay)
+        time.sleep(self.config.ispeak.push_to_talk_key_delay)
 
         # remove recording indicator
         self._handle_delete_indicator()
@@ -205,7 +205,7 @@ class VoiceInput:
 
     def _handle_delete(self, chars_to_delete: int = 0) -> None:
         """Handles actual backspace of chars"""
-        if not chars_to_delete or self.config.code_speak.no_typing:
+        if not chars_to_delete or self.config.ispeak.no_typing:
             return
         cont = Controller()
         for _ in range(chars_to_delete):
@@ -213,7 +213,7 @@ class VoiceInput:
 
     def _handle_delete_indicator(self) -> None:
         """Handle delete of rec indicator"""
-        self._handle_delete(len(self.config.code_speak.recording_indicator))
+        self._handle_delete(len(self.config.ispeak.recording_indicator))
 
     def _handle_delete_last(self) -> None:
         """Handle delete last command by simulating backspace"""
@@ -269,12 +269,12 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     """
     console = Console()
 
-    console.print("[bold][red]◉[/red][/bold] Code Speak Init\n")
+    console.print("[bold][red]◉[/red][/bold] ispeak init\n")
 
     voice_enabled = False
     voice_input = None
 
-    executable = bin_cli or config.code_speak.binary
+    executable = bin_cli or config.ispeak.binary
     # enable binary-less mode if executable is empty/null
     binary_less_mode = not executable
     log_print = binary_less_mode
@@ -283,9 +283,9 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
         """Handle transcribed text by typing it"""
         # log transcription if log file specified
         timestamp = datetime.now().isoformat(timespec='seconds')
-        if config.code_speak.log_file:
+        if config.ispeak.log_file:
             try:
-                with open(config.code_speak.log_file, 'a', encoding='utf-8') as f:
+                with open(config.ispeak.log_file, 'a', encoding='utf-8') as f:
                     f.write(f"## {timestamp}\n{text}\n\n")
             except Exception as e:
                 console.print(f"[red][bold][ERROR][/bold] writing to log file: {e}[/red]")
@@ -297,7 +297,7 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
                 end=""
             )
 
-        if not config.code_speak.no_typing:
+        if not config.ispeak.no_typing:
             try:
                 Controller().type(text + " ")
             except Exception as e:
