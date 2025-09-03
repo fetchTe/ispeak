@@ -1,22 +1,26 @@
 {
   "ispeak": {
-    "binary": "",
+    "binary": null,
     "push_to_talk_key": "end",
     "push_to_talk_key_delay": 0.2,
     "escape_key": "esc",
     "log_file": null,
-    "no_typing": false,
+    "no_output": false,
     "recording_indicator": ";",
     "delete_keywords": ["delete", "undo"],
     "strip_whitespace": true
   },
   "realtime_stt": {
+    "model": "tiny",
+    "compute_type": "auto",
+    "enable_realtime_transcription": false,
+    "ensure_sentence_ends_with_period": true,
+    "ensure_sentence_starting_uppercase": true,
     "language": "auto",
-    "model": "base",
+    "no_log_file": true,
+    "normalize_audio": true,
     "post_speech_silence_duration": 1.0,
-    "silero_use_onnx": true,
-    "spinner": false,
-    "use_main_model_for_realtime": true
+    "spinner": false
   },
   "replace": null
 }

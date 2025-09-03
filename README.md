@@ -1,263 +1,371 @@
-# Claude Speak Code
-An easy-to-use, low-latency speech-to-text library for claude code.
+# ispeak
+
+A keyboard-centric CLI speech-to-text tool that works wherever you can type, be it [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), or AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), and [`claude`](https://claude.ai/code)
+
+<!-- 
+<img align="right" width="200" height="217" alt="ispeak logo" src="#" />
+ -->
+
++ **Keyboard Output** - Transcribed speech as keyboard (press/release) events
++ **Inline UX** - Recording indicator is displayed in the active buffer & self-deletes
++ **Hotkey-Driven & Configurable** - Models, delete, and replace commands
++ **Local & Fast** - Powered via [faster-whisper](https://github.com/SYSTRAN/faster-whisper) with help from [RealtimeSTT](https://github.com/KoljaB/RealtimeSTT)
++ **Cross-Platform** - Works on Linux/macOS/Windows with GPU or CPU
 
 
-### Config Options
 
-## [RealtimeSTT](https://github.com/KoljaB/RealtimeSTT)
-```
-- model (str, default="tiny"): Specifies the size of the transcription
-    model to use or the path to a converted model directory.
-    Valid options are 'tiny', 'tiny.en', 'base', 'base.en',
-    'small', 'small.en', 'medium', 'medium.en', 'large-v1',
-    'large-v2'.
-    If a specific size is provided, the model is downloaded
-    from the Hugging Face Hub.
-- download_root (str, default=None): Specifies the root path were the Whisper models 
-  are downloaded to. When empty, the default is used. 
-- language (str, default=""): Language code for speech-to-text engine.
-    If not specified, the model will attempt to detect the language
-    automatically.
-- compute_type (str, default="default"): Specifies the type of
-    computation to be used for transcription.
-    See https://opennmt.net/CTranslate2/quantization.html.
-- input_device_index (int, default=0): The index of the audio input
-    device to use.
-- gpu_device_index (int, default=0): Device ID to use.
-    The model can also be loaded on multiple GPUs by passing a list of
-    IDs (e.g. [0, 1, 2, 3]). In that case, multiple transcriptions can
-    run in parallel when transcribe() is called from multiple Python
-    threads
-- device (str, default="cuda"): Device for model to use. Can either be 
-    "cuda" or "cpu".
-- on_recording_start (callable, default=None): Callback function to be
-    called when recording of audio to be transcripted starts.
-- on_recording_stop (callable, default=None): Callback function to be
-    called when recording of audio to be transcripted stops.
-- on_transcription_start (callable, default=None): Callback function
-    to be called when transcription of audio to text starts.
-- ensure_sentence_starting_uppercase (bool, default=True): Ensures
-    that every sentence detected by the algorithm starts with an
-    uppercase letter.
-- ensure_sentence_ends_with_period (bool, default=True): Ensures that
-    every sentence that doesn't end with punctuation such as "?", "!"
-    ends with a period
-- use_microphone (bool, default=True): Specifies whether to use the
-    microphone as the audio input source. If set to False, the
-    audio input source will be the audio data sent through the
-    feed_audio() method.
-- spinner (bool, default=False): Show spinner animation with current
-    state. NOTE: works with claude-speak-code, but not recommend.
-- level (int, default=logging.WARNING): Logging level.
-- batch_size (int, default=16): Batch size for the main transcription
-- enable_realtime_transcription (bool, default=False): Enables or
-    disables real-time transcription of audio. When set to True, the
-    audio will be transcribed continuously as it is being recorded.
-- use_main_model_for_realtime (str, default=False):
-    If True, use the main transcription model for both regular and
-    real-time transcription. If False, use a separate model specified
-    by realtime_model_type for real-time transcription.
-    Using a single model can save memory and potentially improve
-    performance, but may not be optimized for real-time processing.
-    Using separate models allows for a smaller, faster model for
-    real-time transcription while keeping a more accurate model for
-    final transcription.
-- realtime_model_type (str, default="tiny"): Specifies the machine
-    learning model to be used for real-time transcription. Valid
-    options include 'tiny', 'tiny.en', 'base', 'base.en', 'small',
-    'small.en', 'medium', 'medium.en', 'large-v1', 'large-v2'.
-- realtime_processing_pause (float, default=0.1): Specifies the time
-    interval in seconds after a chunk of audio gets transcribed. Lower
-    values will result in more "real-time" (frequent) transcription
-    updates but may increase computational load.
-- init_realtime_after_seconds (float, default=0.2): Specifies the 
-    initial waiting time after the recording was initiated before
-    yielding the first realtime transcription
-- on_realtime_transcription_update = A callback function that is
-    triggered whenever there's an update in the real-time
-    transcription. The function is called with the newly transcribed
-    text as its argument.
-- on_realtime_transcription_stabilized = A callback function that is
-    triggered when the transcribed text stabilizes in quality. The
-    stabilized text is generally more accurate but may arrive with a
-    slight delay compared to the regular real-time updates.
-- realtime_batch_size (int, default=16): Batch size for the real-time
-    transcription model.
-- silero_sensitivity (float, default=SILERO_SENSITIVITY): Sensitivity
-    for the Silero Voice Activity Detection model ranging from 0
-    (least sensitive) to 1 (most sensitive). Default is 0.5.
-- silero_use_onnx (bool, default=False): Enables usage of the
-    pre-trained model from Silero in the ONNX (Open Neural Network
-    Exchange) format instead of the PyTorch format. This is
-    recommended for faster performance.
-- silero_deactivity_detection (bool, default=False): Enables the Silero
-    model for end-of-speech detection. More robust against background
-    noise. Utilizes additional GPU resources but improves accuracy in
-    noisy environments. When False, uses the default WebRTC VAD,
-    which is more sensitive but may continue recording longer due
-    to background sounds.
-- webrtc_sensitivity (int, default=WEBRTC_SENSITIVITY): Sensitivity
-    for the WebRTC Voice Activity Detection engine ranging from 0
-    (least aggressive / most sensitive) to 3 (most aggressive,
-    least sensitive). Default is 3.
-- post_speech_silence_duration (float, default=0.2): Duration in
-    seconds of silence that must follow speech before the recording
-    is considered to be completed. This ensures that any brief
-    pauses during speech don't prematurely end the recording.
-- min_gap_between_recordings (float, default=1.0): Specifies the
-    minimum time interval in seconds that should exist between the
-    end of one recording session and the beginning of another to
-    prevent rapid consecutive recordings.
-- min_length_of_recording (float, default=1.0): Specifies the minimum
-    duration in seconds that a recording session should last to ensure
-    meaningful audio capture, preventing excessively short or
-    fragmented recordings.
-- pre_recording_buffer_duration (float, default=0.2): Duration in
-    seconds for the audio buffer to maintain pre-roll audio
-    (compensates speech activity detection latency)
-- on_vad_start (callable, default=None): Callback function to be called
-    when the system detected the start of voice activity presence.
-- on_vad_stop (callable, default=None): Callback function to be called
-    when the system detected the stop (end) of voice activity presence.
-- on_vad_detect_start (callable, default=None): Callback function to
-    be called when the system listens for voice activity. This is not
-    called when VAD actually happens (use on_vad_start for this), but
-    when the system starts listening for it.
-- on_vad_detect_stop (callable, default=None): Callback function to be
-    called when the system stops listening for voice activity. This is
-    not called when VAD actually stops (use on_vad_stop for this), but
-    when the system stops listening for it.
-- on_turn_detection_start (callable, default=None): Callback function
-    to be called when the system starts to listen for a turn of speech.
-- on_turn_detection_stop (callable, default=None): Callback function to
-    be called when the system stops listening for a turn of speech.
-- wakeword_backend (str, default=""): Specifies the backend library to
-    use for wake word detection. Supported options include 'pvporcupine'
-    for using the Porcupine wake word engine or 'oww' for using the
-    OpenWakeWord engine.
-- wakeword_backend (str, default="pvporcupine"): Specifies the backend
-    library to use for wake word detection. Supported options include
-    'pvporcupine' for using the Porcupine wake word engine or 'oww' for
-    using the OpenWakeWord engine.
-- openwakeword_model_paths (str, default=None): Comma-separated paths
-    to model files for the openwakeword library. These paths point to
-    custom models that can be used for wake word detection when the
-    openwakeword library is selected as the wakeword_backend.
-- openwakeword_inference_framework (str, default="onnx"): Specifies
-    the inference framework to use with the openwakeword library.
-    Can be either 'onnx' for Open Neural Network Exchange format 
-    or 'tflite' for TensorFlow Lite.
-- wake_words (str, default=""): Comma-separated string of wake words to
-    initiate recording when using the 'pvporcupine' wakeword backend.
-    Supported wake words include: 'alexa', 'americano', 'blueberry',
-    'bumblebee', 'computer', 'grapefruits', 'grasshopper', 'hey google',
-    'hey siri', 'jarvis', 'ok google', 'picovoice', 'porcupine',
-    'terminator'. For the 'openwakeword' backend, wake words are
-    automatically extracted from the provided model files, so specifying
-    them here is not necessary.
-- wake_words_sensitivity (float, default=0.5): Sensitivity for wake
-    word detection, ranging from 0 (least sensitive) to 1 (most
-    sensitive). Default is 0.5.
-- wake_word_activation_delay (float, default=0): Duration in seconds
-    after the start of monitoring before the system switches to wake
-    word activation if no voice is initially detected. If set to
-    zero, the system uses wake word activation immediately.
-- wake_word_timeout (float, default=5): Duration in seconds after a
-    wake word is recognized. If no subsequent voice activity is
-    detected within this window, the system transitions back to an
-    inactive state, awaiting the next wake word or voice activation.
-- wake_word_buffer_duration (float, default=0.1): Duration in seconds
-    to buffer audio data during wake word detection. This helps in
-    cutting out the wake word from the recording buffer so it does not
-    falsely get detected along with the following spoken text, ensuring
-    cleaner and more accurate transcription start triggers.
-    Increase this if parts of the wake word get detected as text.
-- on_wakeword_detected (callable, default=None): Callback function to
-    be called when a wake word is detected.
-- on_wakeword_timeout (callable, default=None): Callback function to
-    be called when the system goes back to an inactive state after when
-    no speech was detected after wake word activation
-- on_wakeword_detection_start (callable, default=None): Callback
-     function to be called when the system starts to listen for wake
-     words
-- on_wakeword_detection_end (callable, default=None): Callback
-    function to be called when the system stops to listen for
-    wake words (e.g. because of timeout or wake word detected)
-- on_recorded_chunk (callable, default=None): Callback function to be
-    called when a chunk of audio is recorded. The function is called
-    with the recorded audio chunk as its argument.
-- debug_mode (bool, default=False): If set to True, the system will
-    print additional debug information to the console.
-- handle_buffer_overflow (bool, default=True): If set to True, the system
-    will log a warning when an input overflow occurs during recording and
-    remove the data from the buffer.
-- beam_size (int, default=5): The beam size to use for beam search
-    decoding.
-- beam_size_realtime (int, default=3): The beam size to use for beam
-    search decoding in the real-time transcription model.
-- buffer_size (int, default=512): The buffer size to use for audio
-    recording. Changing this may break functionality.
-- sample_rate (int, default=16000): The sample rate to use for audio
-    recording. Changing this will very probably functionality (as the
-    WebRTC VAD model is very sensitive towards the sample rate).
-- initial_prompt (str or iterable of int, default=None): Initial
-    prompt to be fed to the main transcription model.
-- initial_prompt_realtime (str or iterable of int, default=None):
-    Initial prompt to be fed to the real-time transcription model.
-- suppress_tokens (list of int, default=[-1]): Tokens to be suppressed
-    from the transcription output.
-- print_transcription_time (bool, default=False): Logs processing time
-    of main model transcription 
-- early_transcription_on_silence (int, default=0): If set, the
-    system will transcribe audio faster when silence is detected.
-    Transcription will start after the specified milliseconds, so 
-    keep this value lower than post_speech_silence_duration. 
-    Ideally around post_speech_silence_duration minus the estimated
-    transcription time with the main model.
-    If silence lasts longer than post_speech_silence_duration, the 
-    recording is stopped, and the transcription is submitted. If 
-    voice activity resumes within this period, the transcription 
-    is discarded. Results in faster final transcriptions to the cost
-    of additional GPU load due to some unnecessary final transcriptions.
-- allowed_latency_limit (int, default=100): Maximal amount of chunks
-    that can be unprocessed in queue before discarding chunks.
-- no_log_file (bool, default=False): Skips writing of debug log file.
-- use_extended_logging (bool, default=False): Writes extensive
-    log messages for the recording worker, that processes the audio
-    chunks.
-- faster_whisper_vad_filter (bool, default=True): If set to True,
-    the system will additionally use the VAD filter from the faster_whisper library
-    for voice activity detection. This filter is more robust against
-    background noise but requires additional GPU resources.
-- normalize_audio (bool, default=False): If set to True, the system will
-    normalize the audio to a specific range before processing. This can
-    help improve the quality of the transcription.
-- start_callback_in_new_thread (bool, default=False): If set to True,
-    the callback functions will be executed in a
-    new thread. This can help improve performance by allowing the
-    callback to run concurrently with other operations.
-```
+## Quick Start
 
-### Pre-Requirements
+1. **Run**: `ispeak` (add `-b <program>` to target a specific executable)
+2. **Activate**: Press the hotkey (default `end`) - the 'recording indicator' is text-based (default `;`)
+3. **Record**: Speak freely; no automatic timeout or voice activity cutoff
+4. **Complete**: Press the hotkey again to delete the indicator and transcribe your speech (abort via `escape`)
+5. **Output**: Your words appear as typed text at your cursor's location
 
-- [uv](https://docs.astral.sh/uv/): Fast Python package installer
 
-### Development Setup
+> **IMPORTANT**: The output goes to the application that currently has keyboard focus, which allows you to use the same `ispeak` instance between applications. This may be a feature or a bug.
+
+
+### ▎Install
 
 ```bash
-# Install dependencies
-uv sync
+#> copy'n'paste
+uv tool install ispeak
+pip install ispeak      # python’s default package installer
+```
+> [`uv`](https://docs.astral.sh/uv/) is a python package installer
 
-# Install pre-commit hooks
-uv run pre-commit install
+```bash
+#> clone'n'install
+git clone https://github.com/fetchTe/ispeak
+cd ispeak
 
-# Run tests
-uv run pytest
+# global install
+uv tool install .          # with CUDA (default)
+uv tool install ".[cpu]"   # CPU-only (no CUDA)
+uv tool install ".[cu118]" # CUDA v11.8
+uv tool install ".[cu128]" # CUDA v12.8
 
-# Run formatting and linting (automatically runs on commit)
-uv run ruff format .
-uv run ruff check .
-# Auto Fix
-uv run ruff check . --fix
+# local/dev install
+uv sync                    # with CUDA (default)
+uv sync --extra cpu        # CPU-only (no CUDA)
+uv sync --extra cu118      # CUDA v11.8
+uv sync --extra cu128      # CUDA v12.8
+
+# pip/dev install (with CUDA)
+pip install RealtimeSTT pynput rich
+
+# pip/dev install (CPU-only)
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+pip install RealtimeSTT pynput rich
 ```
 
+
+### ▎Usage
+
+```bash
+# USAGE (v0.1.0)
+  ispeak [options...]
+
+# OPTIONS
+  -b, --binary      Executable to launch with voice input
+  -c, --config      Path to configuration file
+  -l, --log-file    Path to voice transcription append log file
+  -n, --no-output   Disable typing output and record indicator
+  -s, --setup       Configure voice settings
+  -t, --test        Test voice input functionality
+  --config-show     Show current configuration
+
+# EXAMPLES
+ispeak --setup         # Interactive configuration wizard
+ispeak -b vim          # Start with vim
+ispeak -l words.log    # Log transcriptions to file
+
+# DEV/LOCAL USAGE
+./ispeak --setup       # via dev helper script
+uv run ispeak --setup  # via uv
+```
+<br/>
+
+
+
+## Configuration
+> **Recommend** using `ispeak --setup` for initial setup
+
+```json
+{
+  "ispeak": {
+    "binary": null,
+    "push_to_talk_key": "end",
+    "push_to_talk_key_delay": 0.2,
+    "escape_key": "esc",
+    "log_file": null,
+    "no_output": false,
+    "recording_indicator": ";",
+    "delete_keywords": ["delete", "undo"],
+    "strip_whitespace": true
+  },
+  "realtime_stt": {
+    "model": "tiny",
+    "compute_type": "auto",
+    "enable_realtime_transcription": false,
+    "ensure_sentence_ends_with_period": true,
+    "ensure_sentence_starting_uppercase": true,
+    "language": "auto",
+    "no_log_file": true,
+    "normalize_audio": true,
+    "post_speech_silence_duration": 1.0,
+    "spinner": false
+  },
+  "replace": null
+}
+```
+
+1. **Environment Variable**: Set `ISPEAK_CONFIG` environment variable to specify a custom config file path
+2. **Platform-Specific Default**: `<config_dir>/ispeak/ispeak.json`
+   - **macOS**: `~/Library/Preferences/ispeak/ispeak.json`
+   - **Windows**: `%APPDATA%\ispeak\ispeak.json` (or `~/AppData/Roaming/ispeak/ispeak.json`)
+   - **Linux**: `$XDG_CONFIG_HOME/ispeak/ispeak.json` (or `~/.config/ispeak/ispeak.json`)
+3. **Local Fallback**: `./ispeak.json` in the current working directory
+<br/>
+
+### ▎ `ispeak`
+
+- `binary` (str/null): Default executable to launch with voice input
+- `delete_keywords` (list/bool): Words that trigger deletion of previous input via backspace (must be exact)
+- `escape_key` (str/null): Key to cancel current recording without transcription
+- `log_file` (str/null): Path to file for logging voice transcriptions
+- `no_output` (bool): Disable typing any output or recording indicator (still logs)
+- `push_to_talk_key_delay` (float): Brief delay after hotkey press to prevent input conflicts
+- `push_to_talk_key` (str/null): Hotkey to start/stop recording sessions
+- `strip_whitespace` (bool): Remove extra whitespace from transcribed text
+- `recording_indicator` (str/null): Visual indicator typed when recording starts **must be a typeable character**
+
+> Hotkeys work via [pynput](https://github.com/moses-palmer/pynput) and support: <br/>
+> ╸ Simple characters: `a`, `b`, `c`, `1`, etc. <br/>
+> ╸ Special keys: `end`, `alt_l`, `ctrl_l` - (see [pynput Key class](https://github.com/moses-palmer/pynput/blob/master/lib/pynput/keyboard/_base.py#L162)) <br/>
+> ╸ Key combinations: `<ctrl>+<alt>+h`, `<shift>+<space>`<br/>
+<br/>
+
+### ▎`realtime_stt`
+Full documentation available in [./RealtimeSTT.md](RealtimeSTT.md) or the [RealtimeSTT](https://github.com/KoljaB/RealtimeSTT) repository.
+
+- `model` (str): Model size or path to local CTranslate2 model (for English variants append `.en`)
+    - `tiny`: Ultra fast, decent accuracy (~39MB, CPU/GPU)
+    - `base`: Balance of speed/accuracy (~74MB, CPU/GPU ~1GB/VRAM)
+    - `small`: Better accuracy (~244MB, GPU ~2GB/VRAM)
+    - `medium`: Better accuracy (~769MB, GPU ~3GB/VRAM)
+    - `large-v1`/`large-v2`: Best accuracy (~1550MB, GPU ~4GB/VRAM)
+- `compute_type` (str): Computation type for transcription (`"auto"` for automatic selection)
+- `enable_realtime_transcription` (bool): Enable continuous transcription (2x computation)
+- `ensure_sentence_ends_with_period` (bool): Add periods to sentences without punctuation
+- `ensure_sentence_starting_uppercase` (bool): Ensure sentences start with uppercase letters
+- `language` (str): Language code (`en`, `es`, `fr`, `de`, etc) or `"auto"` for automatic detection
+- `no_log_file` (bool): Skip debug log file creation
+- `normalize_audio` (bool): Normalize audio range before processing for better transcription quality
+- `post_speech_silence_duration` (float): How long to wait after you stop talking (default: 1.0)
+- `spinner` (bool): Show spinner animation (set to `false` to avoid terminal conflicts)
+<br/>
+
+### ▎ `replace`
+
+Regex replacement rules - either a dict of pattern/replacement pairs or a list of JSON file paths that contain a dict of pattern/replacement pairs. Rules are applied to the transcribed text; best suited for simple operations. 
+
+```json
+{
+  "replace": {
+    " one ": "1",
+    "read me": "README",
+
+    "(\\s+)(semi)(\\s+)": ";\\g<3>",
+    "(\\s+)(comma)(\\s+)": ",\\g<3>",
+
+    "\\s*question\\s*mark\\s*": "?",
+    "\\s*exclamation\\s*mark\\s*": "!",
+
+    "\\s*open\\s*paren\\s*": "(",
+    "\\s*close\\s*paren\\s*": ")",
+
+    "/^start/m": "BEGIN",
+    "/finish$/m": "END"
+  }
+}
+```
+> tests: `./tests/test_replace.py`
+
+
+
+<br/>
+
+
+
+## Troubleshooting
+
++ **Hotkey/Keyboard Issues**: Check/grant permissions see [linux](#linux), [macOS](#linux), [windows](#windows)
++ **Recording Indicator Misfire(s)**: Increase `push_to_talk_key_delay` (try 0.2-1.0)
++ **Transcription Issues**: Try the CPU-only installation and/or the following minimal test code to isolate the problem:
+
+```python
+# test_audio.py -> uv run ./test_audio.py
+from RealtimeSTT import AudioToTextRecorder
+
+def process_text(text):
+    print(f"Transcribed: {text}")
+
+if __name__ == '__main__':
+    print("Testing RealtimeSTT - speak after you see 'Listening...'")
+    try:
+        recorder = AudioToTextRecorder()
+        while True:
+            recorder.text(process_text)
+    except KeyboardInterrupt:
+        print("\nTest completed.")
+    except Exception as e:
+        print(f"Error: {e}")
+```
+
+<br/>
+
+
+
+## Platform Limitations
+> These limitations/quirks come from the `pynput` [docs](https://pynput.readthedocs.io/en/latest/limitations.html)
+
+
+### ▎Linux
+When running under *X*, the following must be true:
+- An *X server* must be running
+- The environment variable `$DISPLAY` must be set
+
+When running under *uinput*, the following must be true:
+- You must run your script as root, to that is has the required permissions for *uinput*
+
+The latter requirement for *X* means that running *pynput* over *SSH* generally will not work. To work around that, make sure to set `$DISPLAY`:
+
+``` bash
+$ DISPLAY=:0 python -c 'import pynput'
+```
+
+Please note that the value `DISPLAY=:0` is just an example. To find the
+actual value, please launch a terminal application from your desktop
+environment and issue the command `echo $DISPLAY`.
+
+When running under *Wayland*, the *X server* emulator `Xwayland` will usually run, providing limited functionality. Notably, you will only receive input events from applications running under this emulator.
+
+
+### ▎macOS
+Recent versions of *macOS* restrict monitoring of the keyboard for security reasons. For that reason, one of the following must be true:
+
+- The process must run as root.
+- Your application must be white listed under *Enable access for assistive devices*. Note that this might require that you package your application, since otherwise the entire *Python* installation must be white listed.
+- On versions after *Mojave*, you may also need to whitelist your terminal application if running your script from a terminal.
+
+All listener classes have the additional attribute `IS_TRUSTED`, which is `True` if no permissions are lacking.
+
+
+### ▎Windows
+Virtual events sent by *other* processes may not be received. This library takes precautions, however, to dispatch any virtual events generated to all currently running listeners of the current process.
+
+<br/>
+
+
+
+## Development
+
+### ▎Structure
+
+```
+ispeak/
+├── src/ispeak/            # Main package source
+│   ├── __init__.py            # Package initialization and exports
+│   ├── cli.py                 # Command-line interface and interactive setup
+│   ├── config.py              # Configuration management and validation
+│   ├── core.py                # Core voice input and text processing logic
+│   └── recorder.py            # Audio recording abstraction layer
+├── main.py                    # Development entry point
+├── ispeak                 # Shell helper script
+├── ispeak.json            # Local fallback configuration
+├── pyproject.toml             # Project metadata and dependencies
+└── README.md                  # Documentation
+```
+
+
+### ▎Development Commands
+
+```bash
+# Type checking
+uv run pyright                 # Type check all source files
+
+# Code linting and formatting
+uv run ruff check .            # Lint code
+uv run ruff check . --fix      # Auto-fix linting issues
+uv run ruff format .           # Format code
+
+# Run in development mode
+uv run ispeak --setup      # Test setup wizard
+uv run ispeak --test       # Test voice input
+```
+
+<br/>
+
+
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Install development dependencies: `uv sync --group dev`
+4. Make your changes following the existing code style
+5. Run quality checks & test:
+
+   ```bash
+   uv run ruff check . --fix    # Fix linting issues
+   uv run ruff format .         # Format code
+   uv run pyright               # Type checking
+   uv run pytest                # Run Test
+   ```
+
+6. Commit your changes: `git commit -m 'feat: add amazing feature'`
+7. Push to your branch: `git push origin feature/amazing-feature`
+8. Open a Pull Request with a clear description of your changes
+
+<br/>
+
+
+
+## Acknowledgments
+
+- **[`RealtimeSTT`](https://github.com/KoljaB/RealtimeSTT)** - A swell wrapper around [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper) that powers the speech-to-text engine
+- **[`pynput`](https://github.com/moses-palmer/pynput)** - Cross-platform controller and monitorer for the keyboard
+- **[`whisper`](https://github.com/openai/whisper)** - The foundational speech-to-text recognition model
+
+
+<br/>
+
+
+
+## License
+
+```
+MIT License
+
+Copyright (c) 2025 te <legal@fetchTe.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
