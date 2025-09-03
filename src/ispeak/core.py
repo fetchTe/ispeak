@@ -155,15 +155,15 @@ class VoiceInput:
         # brief delay required, otherwise typewrite won't fire properly
         time.sleep(self.config.ispeak.push_to_talk_key_delay)
 
-
         # start recorder
+        rm_indicator = False
         try:
             self.recorder.start()
         except Exception as e:
             self.console.print(f"[red]Failed to start recording: {e}[/red]")
             self.recording = False
-            # remove indicator on failure
-            self._handle_delete_indicator()
+            if rm_indicator:
+                self._handle_delete_indicator()
 
     def _stop_recording(self, is_esc: bool = False) -> None:
         """Stop recording and process transcribed text"""
