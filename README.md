@@ -62,7 +62,7 @@ pip install RealtimeSTT pynput rich
 ### ▎Usage
 
 ```bash
-# USAGE (v0.1.0)
+# USAGE (v0.1.1)
   ispeak [options...]
 
 # OPTIONS

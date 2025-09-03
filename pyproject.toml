@@ -1,6 +1,6 @@
 [project]
 name = "ispeak"
-version = "0.1.0"
+version = "0.1.1"
 description = "A keyboard-centric CLI speech-to-text tool that works wherever you can type"
 readme = "README.md"
 authors = [{ name = "te", email = "git@fetchte.com" }]
