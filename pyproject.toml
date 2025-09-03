@@ -4,10 +4,9 @@ version = "0.1.0"
 description = "A keyboard-centric CLI speech-to-text tool that works wherever you can type"
 readme = "README.md"
 authors = [{ name = "te", email = "git@fetchte.com" }]
-requires-python = ">=3.6"
+requires-python = ">=3.10"
 dependencies = [
   "pynput>=1.8.1",
-  "rich>=14.1.0",
   "realtimestt>=0.3.104",
 ]
 
