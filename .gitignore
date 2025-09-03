@@ -2,6 +2,8 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,visualstudiocode,vim,python,jupyternotebooks,venv,virtualenv
 
 prv
+tmp
+tmp.*
 .git.yaml
 
 ### JupyterNotebooks ###
