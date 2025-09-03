@@ -1,10 +1,8 @@
 # ispeak
 
-A keyboard-centric CLI speech-to-text tool that works wherever you can type, be it [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), or AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), and [`claude`](https://claude.ai/code)
+A keyboard-centric speech-to-text tool that works wherever you can type; [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), and CLI/AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), [`claude`](https://claude.ai/code), or whatever you fancy
 
-<!-- 
-<img align="right" width="200" height="217" alt="ispeak logo" src="#" />
- -->
+<img  align="right"  width="188" height="204" alt="ispeak logo" src="https://github.com/user-attachments/assets/9e1e8018-3408-4712-88a9-c658a8da12b9" />
 
 + **Keyboard Output** - Transcribed speech as keyboard (press/release) events
 + **Inline UX** - Recording indicator is displayed in the active buffer & self-deletes
