@@ -27,7 +27,8 @@ jobs:
             libasound2-dev \
             libpulse-dev \
             libsndfile1-dev \
-            ffmpeg
+            ffmpeg \
+            xvfb
 
       - name: install::python
         uses: actions/setup-python@v5
