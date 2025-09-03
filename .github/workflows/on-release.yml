@@ -1,0 +1,161 @@
+name: on-release
+
+env:
+  # release artifacts (adjust to fit your use; an empty string will disable)
+  #  > tars filename: ispeak.v1.0.2.tar.xz
+  ARTIFACTS   : '/tmp/tars/*.tar*,./dist/*'
+  # set to '0' to disable commit links
+  LINK_COMMITS: 1
+  # set to '0' to consider all tags (otherwise tags must start with 'v')
+  SEMVER_ONLY : 1
+  # if/when no previous tag is found, like the first/inital tag
+  # if '0' and no previous tag found, will simply use an empty string
+  FALLBACK    : 1
+  FALLBACK_TAG: 'v0.0.0'
+  # set to '1' to enable action cache (perf/saving is negligible, if at all)
+  USE_CACHE   : 0
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      # @required: by create_release_draft (github.com/ncipollo/release-action)
+      contents: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: install::deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            portaudio19-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libsndfile1-dev \
+            ffmpeg \
+            xvfb
+
+      - name: install::python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: install::uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: install::pdpmake
+        run : |
+          git clone https://github.com/rmyorston/pdpmake pdpmake-src
+          cd pdpmake-src
+          make
+          mkdir -p "$HOME/.local/bin"
+          mv ./make "$HOME/.local/bin/pdpmake"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          cd ..
+          rm -rf pdpmake-src
+
+      - name: make::install_cpu
+        run : pdpmake install_cpu
+
+      - name: make::build
+        env:
+          DISPLAY: :0
+        run: xvfb-run -a -s "-screen 0 1024x768x24" pdpmake build
+
+      - name: create::compressed archive
+        env:
+          CURRENT_TAG      : ${{ github.ref_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run : |
+          NUK=$(printf '\033[0m')
+          CYN=$(printf '\033[0;36m')
+          repo=$(pwd)
+          echo "${CYN}[REPO] ${repo}${NUK}"
+          dpath="/tmp/tars/"
+          mkdir -p "${dpath}"
+          bname="$(basename ${GITHUB_REPOSITORY})"
+          fname="${dpath}${bname}.${CURRENT_TAG}"
+          echo "${CYN}[FILE] ${fname}${NUK}"
+          printf "${CYN}%s%*s${NUK}\n" "[${fname}.tar]" 78 "" | tr " " "~"
+          tar --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='*.pyc' -C "${repo}" -cvf ${fname}.tar .
+          printf "${CYN}%s%*s${NUK}\n" "[${fname}.tar.gz]" 75 "" | tr " " "~"
+          tar --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='*.pyc' -C "${repo}" -cvzf ${fname}.tar.gz .
+          printf "${CYN}%s%*s${NUK}\n" "[${fname}.tar.xz]" 75 "" | tr " " "~"
+          tar --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='*.pyc' -C "${repo}" -cJf ${fname}.tar.xz .
+
+      - name: generate::release-notes
+        id  : generate_notes_notes
+        env:
+          CURRENT_TAG      : ${{ github.ref_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          git config --global --add safe.directory /github/workspace
+          # this suppress an error occurred when the repository is a complete one
+          git fetch --prune --unshallow || true
+          # its POSIXy
+          NUK=$(printf '\033[0m')
+          YEL=$(printf '\033[0;33m')
+          CYN=$(printf '\033[0;36m')
+          gtag=""
+          grange="0"
+          if [ "${SEMVER_ONLY}" = "0" ]; then
+            gtag=$(git tag --sort=-v:refname --list "v*" | grep -v "^${CURRENT_TAG}\$" | head -n 1)
+          else
+            for ref in $(git for-each-ref --sort=-creatordate --format '%(refname)' refs/tags); do
+              tag="${ref#refs/tags/}"
+              [ "${tag}" = "${CURRENT_TAG}" ] && continue
+              echo "${tag}" | grep -Eq '^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+[0-9A-Za-z-]+)?$' && gtag="${tag}" && break
+            done
+          fi
+          if [ -z "${gtag}" ] && [ "${FALLBACK}" = "1" ]; then
+            gtag="${FALLBACK_TAG}"
+            printf "%s[WARN]%s No previous tag found... using full history\n" "${YEL}" "${NUK}"
+            grange=""
+          fi
+          if [ -n "${gtag}" ]; then
+            printf "%s[INFO]%s Comparing: %s%s..HEAD%s\n" "${CYN}" "${NUK}" "${CYN}" "${gtag}" "${NUK}"
+            grange="${gtag}..HEAD"
+          fi
+          if [ -n "${gtag}" ]; then
+            if [ "$LINK_COMMITS" = "1" ]; then
+              printf "## [\`%s\`](https://github.com/%s/tree/%s)\n\n" "${CURRENT_TAG}" "$GITHUB_REPOSITORY" "${CURRENT_TAG}" > /tmp/release.md
+            else
+              printf "## \`%s\`\n\n" "${CURRENT_TAG}" > /tmp/release.md
+            fi
+          fi
+          if [ "${grange}" != "0" ]; then
+            if [ "${LINK_COMMITS}" = "1" ]; then
+              git log --oneline "${grange}" | awk -v repo="${GITHUB_REPOSITORY}" '{print "* [\`" substr($1, 1, 7) "\`](https://github.com/" repo "/commit/" substr($1, 1, 7) ") " substr($0, 9)}' >> /tmp/release.md
+            else
+              git log --oneline "${grange}" | sed 's/^/* /' >> /tmp/release.md
+            fi
+            echo "${CYN}[DONE] out: /tmp/release.md${NUK}"
+            printf "${CYN}%s%*s${NUK}\n" "[OUT]" 85 "" | tr " " "~"
+            cat /tmp/release.md
+            printf "${CYN}%s%*s${NUK}\n" "[OUT]" 85 "" | tr " " "~"
+          else
+            printf "%s[WARN]%s EMPTY release notes... no previous tag found and FALLBACK=0\n" "${YEL}" "${NUK}"
+            echo "" > /tmp/release.md
+          fi
+
+      # create a create draft using the notes we generated in prv action
+      - name: create::release-draft
+        id  : create_release_draft
+        # @docs: https://github.com/ncipollo/release-action
+        uses: ncipollo/release-action@v1
+        env :
+          GITHUB_TOKEN     : ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        with:
+          artifacts: ${{env.ARTIFACTS}}
+          bodyFile : /tmp/release.md
+          draft    : true
+          name     : Release ${{ github.ref_name }}
