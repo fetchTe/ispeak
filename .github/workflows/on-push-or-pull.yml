@@ -1,0 +1,61 @@
+name: on-push-or-pull
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+  pull_request:
+    branches:
+      - dev
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: install::deps
+        run: |
+          apt-get update
+          apt-get install -y \
+            portaudio19-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libsndfile1-dev \
+            ffmpeg
+
+      - name: install::uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: install::pdpmake
+        run : |
+          git clone https://github.com/rmyorston/pdpmake pdpmake-src
+          cd pdpmake-src
+          make
+          mkdir -p "$HOME/.local/bin"
+          mv ./make "$HOME/.local/bin/pdpmake"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          cd ..
+          rm -rf pdpmake-src
+
+      - name: make::install_cpu
+        run : pdpmake install_cpu
+      - name: make::install_dev
+        run : pdpmake install_dev
+
+      - name: make::check::format
+        run: pdpmake format
+      - name: make::check::lint
+        run: pdpmake lint
+      - name: make::check::type
+        run: pdpmake type
+      - name: make::check::test
+        run: pdpmake test
+
+      - name: make::build
+        run : pdpmake build
