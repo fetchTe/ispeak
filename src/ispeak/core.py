@@ -5,9 +5,9 @@ from datetime import datetime
 
 from pynput import keyboard
 from pynput.keyboard import Controller, Key
-from rich.console import Console
 
 from .config import AppConfig
+from .console_helper import log, log_erro, log_warn
 from .recorder import AudioRecorder, RealtimeSTTRecorder
 from .replace import TextReplacer
 
@@ -76,7 +76,7 @@ class VoiceInput:
     def __init__(self, config: AppConfig) -> None:
         # use provided configuration
         self.config = config
-        self.console = Console()
+        # Remove console instance - use class methods directly
 
         # initialize components
         self.text_processor = TextProcessor(self.config)
@@ -97,7 +97,7 @@ class VoiceInput:
         try:
             self.recorder = RealtimeSTTRecorder(self.config.realtime_stt)
         except Exception as e:
-            self.console.print(f"[red]Failed to initialize audio recorder: {e}[/red]")
+            log_erro(f"Failed to initialize audio recorder: {e}")
             raise
 
     def start(self, on_text: Callable[[str], None]) -> None:
@@ -109,12 +109,6 @@ class VoiceInput:
         """
         self.active = True
         self.on_text = on_text
-
-        # show startup message
-        self.console.print("\n[bold][red]◉[/red] [cyan]ispeak active[/cyan][/bold]")
-        self.console.print(f"[blue]  model       : {self.config.realtime_stt.model}[/blue]")
-        self.console.print(f"[blue]  language    : {self.config.realtime_stt.language or 'auto'}[/blue]")
-        self.console.print(f"[blue]  push-to-talk: {self.config.ispeak.push_to_talk_key}[/blue]")
 
         # start keyboard listener for push-to-talk
         hot_rec = {self.config.ispeak.push_to_talk_key: self._on_key_press_hotkey}
@@ -148,7 +142,7 @@ class VoiceInput:
     def _start_recording(self) -> None:
         """Start recording audio and show indicator"""
         if self.recorder is None:
-            self.console.print("[red]No recorder available[/red]")
+            log_erro("No recorder available")
             return
 
         self.recording = True
@@ -159,8 +153,12 @@ class VoiceInput:
         rm_indicator = False
         try:
             self.recorder.start()
+            # type recording indicator
+            if not self.config.ispeak.no_output:
+                Controller().type(self.config.ispeak.recording_indicator)
+                rm_indicator = True
         except Exception as e:
-            self.console.print(f"[red]Failed to start recording: {e}[/red]")
+            log_erro(f"Failed to start recording: {e}")
             self.recording = False
             if rm_indicator:
                 self._handle_delete_indicator()
@@ -199,7 +197,7 @@ class VoiceInput:
                         self.on_text(raw_text)
 
         except Exception as e:
-            self.console.print(f"[red]Error during transcription: {e}[/red]")
+            log_erro(f"Error during transcription: {e}")
 
     def _handle_delete(self, chars_to_delete: int = 0) -> None:
         """Handles actual backspace of chars"""
@@ -265,17 +263,22 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     Returns:
         Exit code from bin execution.
     """
-    console = Console()
-
-    console.print("[bold][red]◉[/red][/bold] ispeak init\n")
-
+    # show startup message
     voice_enabled = False
     voice_input = None
 
     executable = bin_cli or config.ispeak.binary
     # enable binary-less mode if executable is empty/null
-    binary_less_mode = not executable
-    log_print = binary_less_mode
+    is_standalone = not executable
+    cmd = [executable, *bin_args] if executable else []
+    mode = "standalone" if is_standalone else "binary -> {}".format(" ".join(cmd))
+
+    log("[bold][red]◉[/red] [blue]init[/blue][/bold]")
+    log(f"[blue]  mode        :[/blue] {mode}")
+    log(f"[blue]  model       :[/blue] {config.realtime_stt.model}")
+    log(f"[blue]  language    :[/blue] {config.realtime_stt.language or 'auto'}")
+    log(f"[blue]  push-to-talk:[/blue] {config.ispeak.push_to_talk_key}")
+    log(f"[blue]  config      :[/blue] {config.config_path!s}\n")
 
     def handle_voice_text(text: str) -> None:
         """Handle transcribed text by typing it"""
@@ -286,59 +289,56 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
                 with open(config.ispeak.log_file, "a", encoding="utf-8") as f:
                     f.write(f"## {timestamp}\n{text}\n\n")
             except Exception as e:
-                console.print(f"[red][bold][ERROR][/bold] writing to log file: {e}[/red]")
+                log_erro(f"writing to log file: {e}")
 
-        if log_print:
+        if is_standalone:
             # show styled version in terminal
-            console.print(f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n", end="")
+            log(f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n", end="")
 
         if not config.ispeak.no_output:
             try:
                 Controller().type(text + " ")
             except Exception as e:
-                console.print(f"[red][bold][ERROR][/bold] typing text: {e}[/red]")
+                log_erro(f"typing text: {e}")
 
     # try to start voice input
     try:
         voice_input = VoiceInput(config)
         voice_input.start(handle_voice_text)
         voice_enabled = True
+        log("\n[bold][red]◉[/red] [cyan]active[/cyan][/bold]")
 
     except Exception as e:
-        console.print(f"[yellow]Could not start voice input: {e}[/yellow]")
-        console.print("[yellow]Continuing without voice support...[/yellow]")
+        log_erro(f"Could not start voice input due to: {e}")
+        if not is_standalone:
+            log_warn("Continuing without ispeak voice support...")
 
-    cmd = []
     try:
-        if binary_less_mode:
+        if is_standalone:
             # binary-less mode: just run voice input without subprocess
-            console.print("\n[bold][cyan]> Voice Mode[/cyan][/bold] [yellow](to exit: ctrl+c)[/yellow]")
-            console.print("")
             if voice_enabled:
                 try:
                     # keep running until interrupted
                     while True:
                         time.sleep(10)
                 except KeyboardInterrupt:
-                    pass
-            return_code = 0
+                    return_code = 0
+                    print("")
+            else:
+                return_code = 1
         else:
             # normal mode: build command and run binary
-            cmd = [executable, *bin_args]
-            console.print("\n[bold][cyan]> {}[/cyan][/bold]".format(" ".join(cmd)))
             result = subprocess.run(cmd)
             return_code = result.returncode
 
     except KeyboardInterrupt:
         return_code = 0
+        print("")
     except FileNotFoundError:
-        console.print(
-            f"[red][bold][ERROR][/bold] '{cmd[0] if cmd else 'binary'}' command not found."
-            " Make sure it is installed and in PATH.[/red]"
-        )
+        log_erro(f"'{cmd[0] if cmd else 'binary'}' command not found. Make sure it is installed and in PATH.")
         return_code = 1
     except Exception as e:
-        console.print(f"[red][bold][ERROR][/bold] running binary tool: {e}[/red]")
+        log_erro(f"running binary: {e}")
         return_code = 1
     finally:
         # clean up voice input
