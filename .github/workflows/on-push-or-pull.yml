@@ -61,7 +61,7 @@ jobs:
       - name: make::check::type
         run: pdpmake type
       - name: make::check::test
-        run: pdpmake test
+        run: xvfb-run pdpmake test
 
       - name: make::build
         run : pdpmake build
