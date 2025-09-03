@@ -1,11 +1,17 @@
 import argparse
 import sys
+from importlib.metadata import version
 from pathlib import Path
 
 from .cli_commands import setup_voice, show_config, test_voice
 from .config import ConfigManager
 from .console_helper import log_erro, log_warn
 from .core import runner
+
+try:
+    __version__ = version("ispeak")
+except Exception:
+    __version__ = "unknown"
 
 # Shared help text variables
 HELP_BINARY = "Executable to launch with voice input (default: none)"
@@ -26,7 +32,7 @@ def print_help() -> None:
     B_WHITE = "\033[1;97m"
     RESET = "\033[0m"
 
-    help_text = f"""{D_WHITE}#{RESET} {B_WHITE}USAGE{RESET} {D_WHITE}(v0.1.0){RESET}
+    help_text = f"""{D_WHITE}#{RESET} {B_WHITE}USAGE{RESET} {D_WHITE}(v{__version__}){RESET}
   {CYAN}ispeak{RESET} {D_WHITE}[{RESET}{BLUE}options{RESET}{D_WHITE}...]{RESET}
 
 {D_WHITE}#{RESET} {B_WHITE}OPTIONS{RESET}
