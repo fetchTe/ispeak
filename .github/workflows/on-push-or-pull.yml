@@ -61,7 +61,9 @@ jobs:
       - name: make::check::type
         run: pdpmake type
       - name: make::check::test
-        run: xvfb-run -a pdpmake test
+        env:
+          DISPLAY: :0
+        run: xvfb-run -a -s "-screen 0 1024x768x24" pdpmake test
 
       - name: make::build
         run : pdpmake build
