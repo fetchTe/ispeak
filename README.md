@@ -82,7 +82,6 @@ ispeak -b vim          # Start with vim
 ispeak -l words.log    # Log transcriptions to file
 
 # DEV/LOCAL USAGE
-./ispeak --setup       # via dev helper script
 uv run ispeak --setup  # via uv
 ```
 <br/>
