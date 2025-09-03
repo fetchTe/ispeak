@@ -1,6 +1,6 @@
 # ispeak
 
-A keyboard-centric speech-to-text tool that works wherever you can type; [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), and CLI/AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), [`claude`](https://claude.ai/code), or whatever you fancy
+A keyboard-centric speech-to-text tool that works wherever you can type; [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), and CLI/AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), [`claude`](https://claude.ai/code), or whatever your fancy
 
 <img  align="right"  width="188" height="204" alt="ispeak logo" src="https://github.com/user-attachments/assets/9e1e8018-3408-4712-88a9-c658a8da12b9" />
 
