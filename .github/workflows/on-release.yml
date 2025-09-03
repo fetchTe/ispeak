@@ -158,4 +158,4 @@ jobs:
           artifacts: ${{env.ARTIFACTS}}
           bodyFile : /tmp/release.md
           draft    : true
-          name     : Release ${{ github.ref_name }}
+          name     : ${{ github.ref_name }}
