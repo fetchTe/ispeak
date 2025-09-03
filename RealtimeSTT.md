@@ -1,5 +1,7 @@
 # [RealtimeSTT](https://github.com/KoljaB/RealtimeSTT) Config Options
 
+**NOTE**: To save you time and effort, the `wakeword*` is intentionally excluded in favor of a hotkey-driven workflow. While it is certainly possible to use the "wakeword," with a few minor changes, you'll regret not heeding this warning somewhere between the twentieth and umpteenth time you're forced to say it.
+
 ```
 - model (str, default="tiny"): Specifies the size of the transcription
     model to use or the path to a converted model directory.
