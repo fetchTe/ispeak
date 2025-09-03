@@ -1,23 +1,35 @@
-name: CI
+name: ci
 
 on:
   push:
     branches:
-      - main
+      - dev
+      - master
   pull_request:
     branches:
-      - main
+      - dev
+      - master
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install uv
+
+      - name: install
         uses: astral-sh/setup-uv@v6
 
-      - name: Format
-        run: uvx ruff format . --check --diff
+      - name: setup
+        run: uv sync --group dev
 
-      - name: Lint
-        run: uvx ruff check --output-format=github .
+      - name: format
+        run: uv run ruff format . --check --diff
+
+      - name: lint
+        run: uv run ruff check --output-format=github .
+
+      - name: type
+        run: uv run pyright
+
+      - name: test
+        run: uv run pytest
