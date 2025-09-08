@@ -3,7 +3,12 @@ import os
 import platform
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+try:
+    import tomllib
+except ImportError:
+    tomllib = None
 
 from pynput.keyboard import Key, KeyCode
 
@@ -147,12 +152,28 @@ class AppConfig:
 
     realtime_stt: RealtimeSTTConfig
     ispeak: CodeSpeakConfig
+    plugin: dict[str, dict[str, Any]] | None = None
     config_path: Path | None = None
 
     @classmethod
     def default(cls, config_path: Path | None = None) -> "AppConfig":
         """Create default configuration"""
-        return cls(realtime_stt=RealtimeSTTConfig(), ispeak=CodeSpeakConfig(), config_path=config_path)
+        default_plugins = {
+            "replace": {"use": True, "order": 0, "settings": {}},
+            "text2num": {
+                "use": False,
+                "order": 1,
+                "settings": {"lang": "en", "threshold": 0, "min": None, "max": None},
+            },
+            "num2words": {
+                "use": False,
+                "order": 2,
+                "settings": {"lang": "en", "to": "cardinal", "min": None, "max": None},
+            },
+        }
+        return cls(
+            realtime_stt=RealtimeSTTConfig(), ispeak=CodeSpeakConfig(), plugin=default_plugins, config_path=config_path
+        )
 
 
 class ConfigManager:
@@ -165,11 +186,11 @@ class ConfigManager:
         Args:
             config_path:
               1. ISPEAK_CONFIG env var
-              2. env specific config (<config>/ispeak/ispeak.json)
+              2. env specific config (<config>/ispeak/ispeak.{json,toml})
                  - macOS: ~/Library/Preferences
                  - Windows: %APPDATA% (or ~/AppData/Roaming as fallback)
                  - Linux: $XDG_CONFIG_HOME (or ~/.config as fallback per XDG Base Directory spec)
-              3. ./ispeak.json
+              3. ./ispeak.{json,toml}
         """
         if config_path is None:
             # check environment variable first
@@ -178,12 +199,25 @@ class ConfigManager:
                 config_path = Path(env_config_path)
             else:
                 # check default config directory using cross-platform function
-                default_config_path = self.get_config_dir() / "ispeak" / "ispeak.json"
-                if default_config_path.exists():
-                    config_path = default_config_path
+                config_dir = self.get_config_dir() / "ispeak"
+
+                # Check for both JSON and TOML files
+                default_json_path = config_dir / "ispeak.json"
+                default_toml_path = config_dir / "ispeak.toml"
+
+                if default_toml_path.exists():
+                    config_path = default_toml_path
+                elif default_json_path.exists():
+                    config_path = default_json_path
                 else:
-                    # fallback to current directory
-                    config_path = Path("./ispeak.json").resolve()
+                    # fallback to current directory, prefer TOML
+                    current_toml = Path("./ispeak.toml").resolve()
+                    current_json = Path("./ispeak.json").resolve()
+
+                    if current_toml.exists():
+                        config_path = current_toml
+                    else:
+                        config_path = current_json  # Default to JSON for backward compatibility
         self.config_path = config_path
 
     def get_config_dir(self) -> Path:
@@ -220,8 +254,7 @@ class ConfigManager:
             return AppConfig.default()
 
         try:
-            with open(self.config_path) as f:
-                data = json.load(f)
+            data = self._load_config_data()
 
             # parse RealtimeSTT config
             realtime_stt_data = data.get("realtime_stt", {})
@@ -237,39 +270,136 @@ class ConfigManager:
             # parse CodeSpeak config
             ispeak_data = data.get("ispeak", {})
             ispeak = CodeSpeakConfig(**ispeak_data)
-            return AppConfig(realtime_stt=realtime_stt, ispeak=ispeak, config_path=self.config_path)
+
+            # parse plugin config
+            plugin_data = data.get("plugin", {})
+
+            return AppConfig(realtime_stt=realtime_stt, ispeak=ispeak, plugin=plugin_data, config_path=self.config_path)
         except (json.JSONDecodeError, TypeError, KeyError) as e:
             # on any configuration error, return default and warn
             log_erro(f"Failed to load configuration from: {self.config_path}\n{e}")
             log_warn("Using default configuration[/yellow]")
             return AppConfig.default()
+        except Exception as e:
+            # handle TOML parsing errors and other issues
+            log_erro(f"Failed to load configuration from: {self.config_path}\n{e}")
+            log_warn("Using default configuration[/yellow]")
+            return AppConfig.default()
 
-    def save_config(self, config: AppConfig) -> str:
+    def _load_config_data(self) -> dict[str, Any]:
+        """
+        Load configuration data from JSON or TOML file
+
+        Returns:
+            Configuration data dictionary
+        """
+        file_extension = self.config_path.suffix.lower()
+
+        if file_extension == ".toml":
+            if tomllib is None:
+                raise ImportError("TOML support requires Python 3.11+ or tomli package")
+
+            with open(self.config_path, "rb") as f:
+                return tomllib.load(f)
+
+        elif file_extension == ".json":
+            with open(self.config_path, encoding="utf-8") as f:
+                return json.load(f)
+
+        else:
+            # Try to detect format by content for files without proper extensions
+            try:
+                with open(self.config_path, encoding="utf-8") as f:
+                    content = f.read().strip()
+
+                if content.startswith("{"):
+                    # Looks like JSON
+                    return json.loads(content)
+                else:
+                    # Try TOML
+                    if tomllib is None:
+                        raise ImportError("TOML support requires Python 3.11+ or tomli package")
+                    return tomllib.loads(content)
+
+            except (json.JSONDecodeError, ImportError):
+                # Fallback to JSON parsing
+                with open(self.config_path, encoding="utf-8") as f:
+                    return json.load(f)
+
+    def save_config(self, config: AppConfig, save_fmt: Literal["toml", "json"]) -> str:
         """
         Save configuration to file
 
         Args:
             config: Configuration to save
+            save_fmt: Save format type 'json' | 'toml'
         """
-        # ensure parent directory exists
-        save_path = self.get_config_dir() / "ispeak" / "ispeak.json"
+        # Determine save format based on current config path or default to JSON
+        use_toml = save_fmt == "toml"
+        save_ext = "toml" if use_toml else "json"
+        save_path = self.get_config_dir() / "ispeak" / f"ispeak.{save_ext}"
+        save_path = Path(f"/tmp/ispeak/ispeak.{save_ext}")
+
+        # Ensure parent directory exists
         save_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # convert to dictionary format
+        # Convert to dictionary format
         realtime_stt_dict = asdict(config.realtime_stt)
-        # remove internal field
+        # Remove internal field
         realtime_stt_dict.pop("_extra_config", None)
-        # add extra keys
-        realtime_stt_dict.update(config.realtime_stt._extra_config)
+        # Add extra keys
+        if config.realtime_stt._extra_config:
+            realtime_stt_dict.update(config.realtime_stt._extra_config)
 
-        data = {
-            "realtime_stt": realtime_stt_dict,
-            "ispeak": asdict(config.ispeak),
-        }
+        data = {"realtime_stt": realtime_stt_dict, "ispeak": asdict(config.ispeak), "plugin": config.plugin}
 
-        with open(save_path, "w") as f:
-            json.dump(data, f, indent=2)
+        # Add plugin config if present
+        if config.plugin:
+            data["plugin"] = config.plugin
+
+        if use_toml:
+            with open(save_path, "w", encoding="utf-8") as f:
+                self._write_toml(f, data)
+        else:
+            with open(save_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+
         return str(save_path)
+
+    def _write_toml(self, f: Any, data: dict[str, Any], section_prefix: str = "") -> None:
+        """
+        Basic TOML writer for configuration data
+
+        Args:
+            f: File object to write to
+            data: Data to write
+            section_prefix: Prefix for nested sections
+        """
+        # Write simple key-value pairs first
+        for key, value in data.items():
+            if " " in key or "\\" in key:
+                key = key.replace("\\", "\\\\")
+                key = f'"{key}"'
+            if not isinstance(value, dict):
+                if isinstance(value, str):
+                    value = value.replace("\\", "\\\\")
+                    # if " " in value or "\\" in value:
+                    #     value = f"\"{value}\""
+                    f.write(f'{key} = "{value}"\n')
+                elif isinstance(value, bool):
+                    f.write(f"{key} = {str(value).lower()}\n")
+                elif value is None:
+                    # Skip None values in TOML
+                    continue
+                else:
+                    f.write(f"{key} = {value}\n")
+
+        # Write sections
+        for key, value in data.items():
+            if isinstance(value, dict):
+                section_name = f"{section_prefix}.{key}" if section_prefix else key
+                f.write(f"\n[{section_name}]\n")
+                self._write_toml(f, value, section_name)
 
     def validate_config(self, config: AppConfig) -> list[str]:
         """
@@ -296,9 +426,3 @@ class ConfigManager:
             errors.append("silero_sensitivity must be between 0 and 1")
 
         return errors
-
-    def create_default_config(self) -> None:
-        """Create default configuration file if it doesn't exist"""
-        if not self.config_path.exists():
-            default_config = AppConfig.default()
-            self.save_config(default_config)
