@@ -7,7 +7,7 @@
     "log_file": null,
     "no_output": false,
     "recording_indicator": ";",
-    "delete_keywords": ["delete", "undo"],
+    "delete_keyword": ["delete", "undo"],
     "strip_whitespace": true
   },
   "realtime_stt": {

@@ -129,7 +129,7 @@ class CodeSpeakConfig:
     # regex replacement rules - dict of patterns/replacements or list of file paths
     replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output
-    delete_keywords: list[str] | bool | None = True
+    delete_keyword: list[str] | bool | None = True
     # removes extra white space (an extra space is always added to end)
     strip_whitespace: bool = True
     # # default action
@@ -137,10 +137,10 @@ class CodeSpeakConfig:
 
     def __post_init__(self) -> None:
         # set default delete keywords if not provided
-        if not self.delete_keywords:
-            self.delete_keywords = []
-        if self.delete_keywords is True:
-            self.delete_keywords = ["delete", "undo"]
+        if not self.delete_keyword:
+            self.delete_keyword = []
+        if self.delete_keyword is True:
+            self.delete_keyword = ["delete", "undo"]
         # key setup
         self.escape_key = key_to_str(self.escape_key)
         self.push_to_talk_key = key_to_str(self.push_to_talk_key)

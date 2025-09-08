@@ -61,8 +61,8 @@ class TextProcessor:
         Returns:
             True if text matches a delete keyword
         """
-        delete_keywords = self.config.ispeak.delete_keywords
-        if not delete_keywords:
+        delete_keyword = self.config.ispeak.delete_keyword
+        if not delete_keyword:
             return False
         # normalized and remove end period
         normalized = text.lower().strip()
@@ -70,7 +70,7 @@ class TextProcessor:
             normalized = normalized[:-1]
         return normalized in [
             keyword.lower()
-            for keyword in delete_keywords  # type: ignore
+            for keyword in delete_keyword  # type: ignore
         ]
 
 

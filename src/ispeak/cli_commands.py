@@ -106,12 +106,12 @@ def setup_voice(config_manager: ConfigManager) -> None:
 
     # configure delete keywords
     del_def = ["delete", "undo"]
-    del_cur = config.ispeak.delete_keywords
+    del_cur = config.ispeak.delete_keyword
     del_arr = del_cur if del_cur else del_def
     del_arr = del_def if del_arr else del_arr
     del_str = ", ".join(del_arr)
     print_option_header(
-        "delete_keywords",
+        "delete_keyword",
         "words/phrases that, when detected, will delete previous output",
         del_str,
     )
@@ -122,12 +122,11 @@ def setup_voice(config_manager: ConfigManager) -> None:
     keywords_input = ask(default=del_str)
     del_nxt = ""
     if keywords_input.lower() in ["true", "false"]:
-        config.ispeak.delete_keywords = keywords_input.lower() == "true"
+        config.ispeak.delete_keyword = keywords_input.lower() == "true"
         del_nxt = keywords_input[0]
     else:
-        config.ispeak.delete_keywords = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
-        del_nxt = ", ".join(config.ispeak.delete_keywords)
-    time.sleep(1)
+        config.ispeak.delete_keyword = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
+        del_nxt = ", ".join(config.ispeak.delete_keyword)
 
     # configure strip whitespace
     print_option_header(
@@ -172,7 +171,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
         log(f"  push_to_talk_key_delay : [blue]{config.ispeak.push_to_talk_key_delay}[/blue]s")
         log(f"  escape_key             : [blue]{config.ispeak.escape_key}[/blue]")
         log(f"  recording_indicator    : [blue]{config.ispeak.recording_indicator}[/blue]")
-        log(f"  delete_keywords        : [blue]{del_nxt}[/blue]")
+        log(f"  delete_keyword         : [blue]{del_nxt}[/blue]")
         log(f"  strip_whitespace       : [blue]{config.ispeak.strip_whitespace}[/blue]")
         log("\n[bold][cyan]>> realtime_stt[/cyan][/bold]")
         log(f"  language               : [blue]{config.realtime_stt.language}[/blue]")
