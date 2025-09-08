@@ -8,8 +8,8 @@ from pynput.keyboard import Controller, Key
 
 from .config import AppConfig
 from .console_helper import log, log_erro, log_warn
+from .plugin import PluginRegistry
 from .recorder import AudioRecorder, RealtimeSTTRecorder
-from .replace import TextReplacer
 
 
 class TextProcessor:
@@ -23,7 +23,12 @@ class TextProcessor:
             config: Application configuration
         """
         self.config = config
-        self.replacer = TextReplacer(config.ispeak.replace) if config.ispeak.replace else None
+        self.plugin_registry = PluginRegistry()
+
+        # configure plugins
+        plugin_config = config.plugin or {}
+
+        self.plugin_registry.configure(plugin_config)
 
     def process_text(self, text: str) -> str:
         """
@@ -42,9 +47,8 @@ class TextProcessor:
         if self.config.ispeak.strip_whitespace:
             processed = processed.strip()
 
-        # apply regex replacements
-        if self.replacer:
-            processed = self.replacer.apply_replacements(processed)
+        # apply all plugin transformations
+        processed = self.plugin_registry.process_text(processed)
 
         return processed
 
@@ -76,7 +80,7 @@ class VoiceInput:
     def __init__(self, config: AppConfig) -> None:
         # use provided configuration
         self.config = config
-        # Remove console instance - use class methods directly
+        # remove console instance - use class methods directly
 
         # initialize components
         self.text_processor = TextProcessor(self.config)
