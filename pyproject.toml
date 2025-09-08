@@ -4,7 +4,7 @@ version = "0.1.1"
 description = "A keyboard-centric CLI speech-to-text tool that works wherever you can type"
 readme = "README.md"
 authors = [{ name = "te", email = "git@fetchte.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
   "pynput>=1.8.1",
   "realtimestt>=0.3.104",
@@ -22,6 +22,10 @@ cu118 = [
 cu128 = [
   "torch>=2.1.0",
   "torchaudio>=2.1.0",
+]
+plugin = [
+  "text2num>=3.0.0",
+  "num2words>=0.5.14",
 ]
 
 [tool.uv]
