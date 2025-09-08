@@ -12,15 +12,49 @@
   },
   "realtime_stt": {
     "model": "tiny",
+    "language": "auto",
+    "beam_size": 5,
     "compute_type": "auto",
+    "download_root": null,
     "enable_realtime_transcription": false,
     "ensure_sentence_ends_with_period": true,
     "ensure_sentence_starting_uppercase": true,
-    "language": "auto",
+    "initial_prompt": null,
     "no_log_file": true,
     "normalize_audio": true,
-    "post_speech_silence_duration": 1.0,
+    "post_speech_silence_duration": 0.2,
     "spinner": false
   },
-  "replace": null
+
+  "plugin": {
+
+    "replace": {
+      "use": false,
+      "order": 0,
+      "settings": {
+        "iSpeak": "ispeak"
+      }
+    },
+
+    "text2num": {
+      "use": false,
+      "order": 1,
+      "settings": {
+        "lang": "en",
+        "threshold": 0.0
+      }
+    },
+
+    "num2words": {
+      "use": false,
+      "order": 2,
+      "settings": {
+        "lang": "en",
+        "to": "ordinal",
+        "min": null,
+        "max": null
+      }
+    }
+
+  }
 }
