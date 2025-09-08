@@ -119,6 +119,9 @@ class VoiceInput:
         # add esc if present
         if self.config.ispeak.escape_key:
             hot_rec[self.config.ispeak.escape_key] = self._on_key_press_esckey
+        # add delete if present
+        if self.config.ispeak.delete_key:
+            hot_rec[self.config.ispeak.delete_key] = self._handle_delete_last
         # https://pynput.readthedocs.io/en/latest/keyboard-usage.html#global-hotkeys
         self.listener = keyboard.GlobalHotKeys(hot_rec)
         self.listener.start()
@@ -126,9 +129,6 @@ class VoiceInput:
     def stop(self) -> None:
         """Stop voice input system and cleanup resources"""
         self.active = False
-
-        # clear input history when session ends
-        self.last_input.clear()
 
         # stop keyboard listener
         if self.listener:

@@ -8,6 +8,7 @@
     "no_output": false,
     "recording_indicator": ";",
     "delete_keyword": ["delete", "undo"],
+    "delete_key": null,
     "strip_whitespace": true
   },
   "realtime_stt": {

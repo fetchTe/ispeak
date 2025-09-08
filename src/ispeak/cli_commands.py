@@ -127,6 +127,17 @@ def setup_voice(config_manager: ConfigManager) -> None:
     else:
         config.ispeak.delete_keyword = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
         del_nxt = ", ".join(config.ispeak.delete_keyword)
+    # configure escape key
+    print_option_header(
+        "delete_key",
+        "key to trigger deletion of previous input via backspace",
+        str(config.ispeak.delete_key),
+    )
+    log(f"[bold][yellow]!~~~~~~![/yellow] [white]Only one key permitted; to include modifier keys such as Ctrl or Alt, adjust the config by hand with the notation of: <alt>+<...>[/white][/bold]")
+    captured_delete_key = capture_key("press your desired 'delete' key")
+    if captured_delete_key:
+        config.ispeak.delete_key = captured_delete_key
+    time.sleep(0.5)
 
     # configure strip whitespace
     print_option_header(
@@ -172,6 +183,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
         log(f"  escape_key             : [blue]{config.ispeak.escape_key}[/blue]")
         log(f"  recording_indicator    : [blue]{config.ispeak.recording_indicator}[/blue]")
         log(f"  delete_keyword         : [blue]{del_nxt}[/blue]")
+        log(f"  delete_key             : [blue]{config.ispeak.delete_key}[/blue]")
         log(f"  strip_whitespace       : [blue]{config.ispeak.strip_whitespace}[/blue]")
         log("\n[bold][cyan]>> realtime_stt[/cyan][/bold]")
         log(f"  language               : [blue]{config.realtime_stt.language}[/blue]")

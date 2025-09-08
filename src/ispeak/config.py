@@ -130,6 +130,8 @@ class CodeSpeakConfig:
     replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output
     delete_keyword: list[str] | bool | None = True
+    # key to delete last/previous output
+    delete_key: str | None = None
     # removes extra white space (an extra space is always added to end)
     strip_whitespace: bool = True
     # # default action
@@ -142,6 +144,7 @@ class CodeSpeakConfig:
         if self.delete_keyword is True:
             self.delete_keyword = ["delete", "undo"]
         # key setup
+        self.delete_key = key_to_str(self.delete_key)
         self.escape_key = key_to_str(self.escape_key)
         self.push_to_talk_key = key_to_str(self.push_to_talk_key)
 
