@@ -12,9 +12,9 @@ from .core import VoiceInput
 
 OR_ENTER = "[dim](press 'enter' to keep current)[/dim]"
 SINGLE_KEY_ONLY = (
-    "[bold][yellow]!~~~~~~![/yellow] [white]Only one key permitted;"
+    "[bold][yellow]!!~~~>>[/yellow]: [white]Only one key permitted[/bold];"
     " to include modifier keys such as Ctrl or Alt, adjust the config by hand with"
-    " the notation of: <alt>+<...>[/white][/bold]"
+    " the notation of: <alt>+<...>[/white]"
 )
 CWAIT = 0.5  # give the key capture a bit of room to breath
 
