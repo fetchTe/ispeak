@@ -203,10 +203,15 @@ install_cpu: ## install dependencies -> uv sync --extra cpu
 	@$(MAKE) MSG="install_cpu" LEN="-1" _done
 
 .PHONY: install_dev
-install_dev: ## install dev dependencies -> uv sync --group dev
+install_dev: ## install dev dependencies -> uv sync --group dev --extra plugin
 	@$(MAKE) MSG="install_dev" LEN="-1" _init
-	@$(BIN_UV) sync --group dev $(_VFLG) $(UV)
+	@$(BIN_UV) sync --group dev --extra plugin $(_VFLG) $(UV)
 	@$(MAKE) MSG="install_dev" LEN="-1" _done
+
+install_plugin: ## install plugin dependencies -> uv sync --extra plugin
+	@$(MAKE) MSG="install_plugin" LEN="-1" _init
+	@$(BIN_UV) sync --extra plugin $(_VFLG) $(UV)
+	@$(MAKE) MSG="install_plugin" LEN="-1" _done
 
 .PHONY: update
 update: ## update dependencies -> uv lock --upgrade && uv sync
@@ -219,6 +224,18 @@ update: ## update dependencies -> uv lock --upgrade && uv sync
 update_dry: ## show outdated dependencies  -> uv tree --outdated
 	@$(BIN_UV) tree --outdated
 
+.PHONY: venv
+venv: ## setup virtual environment if needed -> uv venv -p 3.11
+	@[ -n "$$VIRTUAL_ENV" ] && \
+		$(MAKE) LEN="0" COLOR="1;92" MSG="[VENV] active -> $$VIRTUAL_ENV" _pretty_printer || true
+	@[ -z "$$VIRTUAL_ENV" ] && [ -d ".venv" ] && \
+		$(MAKE) LEN="0" COLOR="0;94" MSG="[VENV] exists" _pretty_printer || true
+	@[ -z "$$VIRTUAL_ENV" ] && [ ! -d ".venv" ] && \
+		$(MAKE) LEN="0" COLOR="0;33" MSG="[VENV] $(BIN_UV) venv -p 3.11" _pretty_printer && \
+		$(BIN_UV) venv -p 3.11 || true
+	@[ -z "$$VIRTUAL_ENV" ] && \
+		$(MAKE) LEN="0" COLOR="1;37" MSG="[>RUN] source .venv/bin/activate" _pretty_printer || true
+
 
 #------------------------------------------------------------------------------#
 # @id::check
@@ -226,11 +243,11 @@ update_dry: ## show outdated dependencies  -> uv tree --outdated
 #      : microsoft.github.io/pyright
 #------------------------------------------------------------------------------#
 .PHONY: check
-check: ## run all checks: format, lint, and type
+check: ## run all checks: lint, type, and format
 	@$(MAKE) MSG="check" LEN="-1" _init
-	@$(MAKE) format
 	@$(MAKE) lint
 	@$(MAKE) type
+	@$(MAKE) format
 	@$(MAKE) MSG="check" LEN="-1" _done
 
 .PHONY: format
@@ -302,7 +319,7 @@ NL = \n# new line (helps read-ability)
 
 .PHONY: help
 help: ## displays (this) help screen
-	@printf "$(BW)#$(CR)$(FW) USAGE$(CR) $(FD)(uv-make/v1.0.0)$(CR)$(NL)"
+	@printf "$(BW)#$(CR)$(FW) USAGE$(CR) $(FD)(ispeak)$(CR)$(NL)"
 	@printf "   $(FC)make$(CR) $(FY)[flags...]$(CR) $(FB)<target>$(CR)$(NL)$(NL)"
 	@printf "$(BW)#$(CR)$(FW) TARGET$(CR)$(NL)"
 	@$(BIN_AWK) --posix '/^# *@id::/ { printf "$(FD)  -------------------$(CR)$(NL)"  } \
