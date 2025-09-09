@@ -55,11 +55,11 @@ def key_to_str(ikey: str | Key | KeyCode | None) -> str:
 
 
 @dataclass
-class RealtimeSTTConfig:
+class ModelSTTConfig:
     """
-    Configuration for RealtimeSTT settings
+    Configuration for ModelSTT settings
 
-    - NOTE: None -> RealtimeSTT default
+    - NOTE: None -> ModelSTT default
     - NOTE: intentionally excluded wake word activation in favor of a hotkey-driven
             workflow but it's do-able, the only real hitch is implementing a way
             to steal/change the focus from the active window to the cli/terminal -
@@ -91,12 +91,12 @@ class RealtimeSTTConfig:
     _extra_config: dict[str, Any] = None  # type: ignore
 
     def to_dict(self) -> dict[str, Any]:
-        # convert to dictionary for RealtimeSTT initialization
+        # convert to dictionary for ModelSTT initialization
         config = asdict(self)
         # remove our internal _extra_config field from the output
         config.pop("_extra_config", None)
 
-        # remove None values to let RealtimeSTT use its defaults
+        # remove None values to let ModelSTT use its defaults
         config = {k: v for k, v in config.items() if v is not None}
 
         # handle empty language for auto-detection
@@ -151,7 +151,7 @@ class CodeSpeakConfig:
 class AppConfig:
     """Main application configuration"""
 
-    realtime_stt: RealtimeSTTConfig
+    stt: ModelSTTConfig
     ispeak: CodeSpeakConfig
     plugin: dict[str, dict[str, Any]] | None = None
     config_path: Path | None = None
@@ -172,9 +172,7 @@ class AppConfig:
                 "settings": {"lang": "en", "to": "cardinal", "min": None, "max": None},
             },
         }
-        return cls(
-            realtime_stt=RealtimeSTTConfig(), ispeak=CodeSpeakConfig(), plugin=default_plugins, config_path=config_path
-        )
+        return cls(stt=ModelSTTConfig(), ispeak=CodeSpeakConfig(), plugin=default_plugins, config_path=config_path)
 
 
 class ConfigManager:
@@ -257,16 +255,16 @@ class ConfigManager:
         try:
             data = self._load_config_data()
 
-            # parse RealtimeSTT config
-            realtime_stt_data = data.get("realtime_stt", {})
+            # parse ModelSTT config
+            stt_data = data.get("stt", {})
 
             # separate known dataclass fields from extra config
-            known_fields = {f.name for f in fields(RealtimeSTTConfig)}
-            known_config = {k: v for k, v in realtime_stt_data.items() if k in known_fields}
-            extra_config = {k: v for k, v in realtime_stt_data.items() if k not in known_fields}
+            known_fields = {f.name for f in fields(ModelSTTConfig)}
+            known_config = {k: v for k, v in stt_data.items() if k in known_fields}
+            extra_config = {k: v for k, v in stt_data.items() if k not in known_fields}
 
-            realtime_stt = RealtimeSTTConfig(**known_config)
-            realtime_stt._extra_config = extra_config
+            model = ModelSTTConfig(**known_config)
+            model._extra_config = extra_config
 
             # parse CodeSpeak config
             ispeak_data = data.get("ispeak", {})
@@ -275,7 +273,7 @@ class ConfigManager:
             # parse plugin config
             plugin_data = data.get("plugin", {})
 
-            return AppConfig(realtime_stt=realtime_stt, ispeak=ispeak, plugin=plugin_data, config_path=self.config_path)
+            return AppConfig(stt=model, ispeak=ispeak, plugin=plugin_data, config_path=self.config_path)
         except (json.JSONDecodeError, TypeError, KeyError) as e:
             # on any configuration error, return default and warn
             log_erro(f"Failed to load configuration from: {self.config_path}\n{e}")
@@ -345,14 +343,14 @@ class ConfigManager:
         save_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Convert to dictionary format
-        realtime_stt_dict = asdict(config.realtime_stt)
+        model_dict = asdict(config.stt)
         # Remove internal field
-        realtime_stt_dict.pop("_extra_config", None)
+        model_dict.pop("_extra_config", None)
         # Add extra keys
-        if config.realtime_stt._extra_config:
-            realtime_stt_dict.update(config.realtime_stt._extra_config)
+        if config.stt._extra_config:
+            model_dict.update(config.stt._extra_config)
 
-        data = {"realtime_stt": realtime_stt_dict, "ispeak": asdict(config.ispeak), "plugin": config.plugin}
+        data = {"model": model_dict, "ispeak": asdict(config.ispeak), "plugin": config.plugin}
 
         # Add plugin config if present
         if config.plugin:
@@ -422,7 +420,7 @@ class ConfigManager:
         # @NOTE -> skipping validating model due to custom possibilities
 
         # validate sensitivity settings (0-1 range)
-        silero_sens = config.realtime_stt.silero_sensitivity
+        silero_sens = config.stt.silero_sensitivity
         if silero_sens is not None and not 0 <= silero_sens <= 1:
             errors.append("silero_sensitivity must be between 0 and 1")
 

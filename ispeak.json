@@ -11,7 +11,7 @@
     "delete_key": null,
     "strip_whitespace": true
   },
-  "realtime_stt": {
+  "stt": {
     "model": "tiny",
     "language": "auto",
     "beam_size": 5,

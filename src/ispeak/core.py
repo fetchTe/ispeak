@@ -11,7 +11,7 @@ from pyperclip import copy
 from .config import AppConfig
 from .console_helper import log, log_erro, log_warn
 from .plugin import PluginRegistry
-from .recorder import AudioRecorder, RealtimeSTTRecorder
+from .recorder import AudioRecorder, ModelSTTRecorder
 
 
 class TextProcessor:
@@ -101,7 +101,7 @@ class VoiceInput:
     def _init_recorder(self) -> None:
         """Initialize audio recorder with configuration"""
         try:
-            self.recorder = RealtimeSTTRecorder(self.config.realtime_stt)
+            self.recorder = ModelSTTRecorder(self.config.stt)
         except Exception as e:
             log_erro(f"Failed to initialize audio recorder: {e}")
             raise
@@ -288,9 +288,9 @@ def runner(
 
     log("[bold][red]◉[/red] [blue]init[/blue][/bold]")
     log(f"[blue]  mode        :[/blue] {mode}")
-    log(f"[blue]  model       :[/blue] {config.realtime_stt.model}")
+    log(f"[blue]  model       :[/blue] {config.stt.model}")
     log(f"[blue]  output      :[/blue] {output}")
-    log(f"[blue]  language    :[/blue] {config.realtime_stt.language or 'auto'}")
+    log(f"[blue]  language    :[/blue] {config.stt.language or 'auto'}")
     log(f"[blue]  push-to-talk:[/blue] {config.ispeak.push_to_talk_key}")
     log(f"[blue]  config      :[/blue] {config.config_path!s}\n")
 

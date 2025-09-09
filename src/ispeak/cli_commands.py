@@ -182,25 +182,25 @@ def setup_voice(config_manager: ConfigManager) -> None:
     time.sleep(CWAIT)
 
     # configure language
-    language = config.realtime_stt.language
+    language = config.stt.language
     if not language:
         language = "auto"
     print_option_header("language", "speech recognition language", language)
     log("- [bold]options[/bold]: en, es, fr, de, it, pt, ru, ja, ko, zh, auto")
     log(f"\n[bold][blue]>[/blue][/bold] [white]enter language code {OR_ENTER}[/white]")
-    language = ask(default=config.realtime_stt.language)
-    config.realtime_stt.language = language
+    language = ask(default=config.stt.language)
+    config.stt.language = language
     time.sleep(CWAIT)
 
     # configure model size
-    model = config.realtime_stt.model
+    model = config.stt.model
     if not model:
         model = "base"
     print_option_header("model", "speech recognition model size", model)
     log("- [bold]options[/bold]: tiny (fastest, cpu), base (balanced), small (better accuracy), large (best accuracy)")
     log(f"\n[bold][blue]>[/blue][/bold] [white]enter model size {OR_ENTER}[/white]")
-    model = ask(default=config.realtime_stt.model, choices=VALID_MODELS)
-    config.realtime_stt.model = model
+    model = ask(default=config.stt.model, choices=VALID_MODELS)
+    config.stt.model = model
     time.sleep(CWAIT)
 
     # configure save format
@@ -224,9 +224,9 @@ def setup_voice(config_manager: ConfigManager) -> None:
         log(f"  push_to_talk_key_delay : [blue]{config.ispeak.push_to_talk_key_delay}[/blue]s")
         log(f"  recording_indicator    : [blue]{config.ispeak.recording_indicator}[/blue]")
         log(f"  strip_whitespace       : [blue]{config.ispeak.strip_whitespace}[/blue]")
-        log("\n[bold][cyan]>> realtime_stt[/cyan][/bold]")
-        log(f"  language               : [blue]{config.realtime_stt.language}[/blue]")
-        log(f"  model                  : [blue]{config.realtime_stt.model}[/blue]\n")
+        log("\n[bold][cyan]>> model[/cyan][/bold]")
+        log(f"  language               : [blue]{config.stt.language}[/blue]")
+        log(f"  model                  : [blue]{config.stt.model}[/blue]\n")
     except Exception as e:
         log_erro(f"Failed to save configuration: {e}")
         sys.exit(1)
@@ -275,7 +275,7 @@ def show_config(config_manager: ConfigManager) -> None:
 
         # convert to JSON for display
         config_dict = {
-            "realtime_stt": config.realtime_stt.__dict__,
+            "model": config.stt.__dict__,
             "ispeak": config.ispeak.__dict__,
         }
 

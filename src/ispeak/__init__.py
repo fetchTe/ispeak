@@ -2,9 +2,9 @@
 
 from importlib.metadata import version
 
-from .config import AppConfig, CodeSpeakConfig, ConfigManager, RealtimeSTTConfig
+from .config import AppConfig, CodeSpeakConfig, ConfigManager, ModelSTTConfig
 from .core import TextProcessor, VoiceInput
-from .recorder import AudioRecorder, RealtimeSTTRecorder
+from .recorder import AudioRecorder, ModelSTTRecorder
 
 try:
     __version__ = version("ispeak")
@@ -16,8 +16,8 @@ __all__ = [
     "AudioRecorder",
     "CodeSpeakConfig",
     "ConfigManager",
-    "RealtimeSTTConfig",
-    "RealtimeSTTRecorder",
+    "ModelSTTConfig",
+    "ModelSTTRecorder",
     "TextProcessor",
     "VoiceInput",
 ]
