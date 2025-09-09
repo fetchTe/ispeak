@@ -2,6 +2,7 @@ import argparse
 import sys
 from importlib.metadata import version
 from pathlib import Path
+from typing import Literal
 
 from .cli_commands import setup_voice, show_config, test_voice
 from .config import ConfigManager
@@ -17,9 +18,10 @@ except Exception:
 HELP_BINARY = "Executable to launch with voice input (default: none)"
 HELP_CONFIG = "Path to configuration file"
 HELP_LOG_FILE = "Path to voice transcription append log file"
-HELP_NO_OUTPUT = "Disable typing output and record indicator"
+HELP_NO_OUTPUT = "Disables all output/actions - typing, copying, and record indicator"
 HELP_SETUP = "Configure voice settings"
 HELP_TEST = "Test voice input functionality"
+HELP_COPY = "Use the 'clipboard' to copy instead of the 'keyboard' to type the output"
 HELP_CONFIG_SHOW = "Show current configuration"
 
 
@@ -40,6 +42,7 @@ def print_help() -> None:
   {D_WHITE}-{RESET}{BLUE}c{RESET}{D_WHITE}, --{RESET}{BLUE}config{RESET}      {HELP_CONFIG}
   {D_WHITE}-{RESET}{BLUE}l{RESET}{D_WHITE}, --{RESET}{BLUE}log-file{RESET}    {HELP_LOG_FILE}
   {D_WHITE}-{RESET}{BLUE}n{RESET}{D_WHITE}, --{RESET}{BLUE}no-output{RESET}   {HELP_NO_OUTPUT}
+  {D_WHITE}-{RESET}{BLUE}p{RESET}{D_WHITE}, --{RESET}{BLUE}copy{RESET}        {HELP_COPY}
   {D_WHITE}-{RESET}{BLUE}s{RESET}{D_WHITE}, --{RESET}{BLUE}setup{RESET}       {HELP_SETUP}
   {D_WHITE}-{RESET}{BLUE}t{RESET}{D_WHITE}, --{RESET}{BLUE}test{RESET}        {HELP_TEST}
   {D_WHITE}--{RESET}{BLUE}config-show{RESET}     {HELP_CONFIG_SHOW}"""
@@ -60,6 +63,7 @@ def main() -> int:
     parser.add_argument("-n", "--no-output", action="store_true", help=HELP_NO_OUTPUT)
     parser.add_argument("-s", "--setup", action="store_true", help=HELP_SETUP)
     parser.add_argument("-t", "--test", action="store_true", help=HELP_TEST)
+    parser.add_argument("-p", "--copy", action="store_true", help=HELP_COPY)
     parser.add_argument("--config-show", action="store_true", help=HELP_CONFIG_SHOW)
 
     # check for help first
@@ -77,8 +81,6 @@ def main() -> int:
     # apply CLI overrides
     if our_args.log_file:
         config.ispeak.log_file = our_args.log_file
-    if our_args.no_output:
-        config.ispeak.no_output = our_args.no_output
 
     # validate configuration
     errors = config_manager.validate_config(config)
@@ -108,8 +110,17 @@ def main() -> int:
             print_help()
             return 0
 
+    # clip or no output override
+    cli_output: Literal["clipboard", False, None] = None
+    if our_args.no_output:
+        cli_output = False
+    elif our_args.copy:
+        cli_output = "clipboard"
+    if cli_output is not None:
+        config.ispeak.output = cli_output
+
     # if no specific command, run with executable tool integration
-    return runner(bin_args, our_args.binary, config)
+    return runner(bin_args, our_args.binary, cli_output, config)
 
 
 if __name__ == "__main__":

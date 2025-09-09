@@ -5,7 +5,7 @@
     "push_to_talk_key_delay": 0.2,
     "escape_key": "esc",
     "log_file": null,
-    "no_output": false,
+    "output": "keyboard",
     "recording_indicator": ";",
     "delete_keyword": ["delete", "undo"],
     "delete_key": null,

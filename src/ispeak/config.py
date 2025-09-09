@@ -124,8 +124,8 @@ class CodeSpeakConfig:
     recording_indicator: str = ";"
     # path to log file for voice transcriptions
     log_file: str | None = None
-    # disable typing output and recording indicator (disables pyautogui)
-    no_output: bool = False
+    # default output action (false disables output like old no_output: true)
+    output: Literal["keyboard", "clipboard", False] = "keyboard"
     # regex replacement rules - dict of patterns/replacements or list of file paths
     replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output
@@ -134,8 +134,6 @@ class CodeSpeakConfig:
     delete_key: str | None = None
     # removes extra white space (an extra space is always added to end)
     strip_whitespace: bool = True
-    # # default action
-    # action: Literal["type", "copy"] = "type"
 
     def __post_init__(self) -> None:
         # set default delete keywords if not provided

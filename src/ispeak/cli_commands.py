@@ -1,6 +1,7 @@
 import json
 import sys
 import time
+from typing import Literal
 
 import pynput.keyboard
 from pynput.keyboard import Key, KeyCode
@@ -10,6 +11,12 @@ from .console_helper import ask, confirm, float_ask, log, log_erro
 from .core import VoiceInput
 
 OR_ENTER = "[dim](press 'enter' to keep current)[/dim]"
+SINGLE_KEY_ONLY = (
+    "[bold][yellow]!~~~~~~![/yellow] [white]Only one key permitted;"
+    " to include modifier keys such as Ctrl or Alt, adjust the config by hand with"
+    " the notation of: <alt>+<...>[/white][/bold]"
+)
+CWAIT = 0.5  # give the key capture a bit of room to breath
 
 
 def print_option_header(option_name: str, info: str, current_value: str) -> None:
@@ -48,8 +55,9 @@ def setup_voice(config_manager: ConfigManager) -> None:
     """Interactive configuration for voice settings"""
     config = config_manager.load_config()
 
-    time.sleep(1)
     log("\n[bold][red]◉[/red] [green]ispeak setup[/green][/bold]")
+    log(f"[bold][blue]> loading defaults via:[/blue] {config.config_path}[/bold]")
+    time.sleep(CWAIT)
 
     binary = config.ispeak.binary
     if not binary:
@@ -61,48 +69,19 @@ def setup_voice(config_manager: ConfigManager) -> None:
     if binary in ("none", "'none'", '"none"'):
         binary = None
     config.ispeak.binary = binary
-    time.sleep(1)
+    time.sleep(CWAIT)
 
-    # configure push-to-talk key
-    print_option_header("push_to_talk_key", "key to initialize recording session", config.ispeak.push_to_talk_key)
-    captured_key = capture_key("press your desired PTT key")
-    if captured_key:
-        config.ispeak.push_to_talk_key = captured_key
-    time.sleep(1)
-
-    # configure push-to-talk key delay
+    # configure delete key
     print_option_header(
-        "push_to_talk_key_delay",
-        "execution delay after PTT key press (helps prevent mistypes)",
-        f"{config.ispeak.push_to_talk_key_delay} seconds",
+        "delete_key",
+        "key to trigger deletion of previous input via backspace",
+        str(config.ispeak.delete_key),
     )
-    log(f"\n[bold][blue]>[/blue][/bold] [white]enter delay in seconds {OR_ENTER}[/white]")
-    delay = float_ask(default=config.ispeak.push_to_talk_key_delay)
-    config.ispeak.push_to_talk_key_delay = delay
-    time.sleep(1)
-
-    # configure escape key
-    print_option_header(
-        "escape_key",
-        "key to escape current recording session without outputting transcription",
-        str(config.ispeak.escape_key),
-    )
-    captured_escape_key = capture_key("press your desired escape key")
-    if captured_escape_key:
-        config.ispeak.escape_key = captured_escape_key
-    time.sleep(1)
-
-    # configure recording indicator
-    print_option_header(
-        "recording_indicator",
-        "character/word output when recording starts",
-        config.ispeak.recording_indicator,
-    )
-    log(f"\n[bold][blue]>[/blue][/bold] [white]enter new indicator {OR_ENTER}[/white]")
-    new_indicator = ask(default=config.ispeak.recording_indicator)
-    if new_indicator:
-        config.ispeak.recording_indicator = new_indicator
-    time.sleep(1)
+    log(SINGLE_KEY_ONLY)
+    captured_delete_key = capture_key("press your desired 'delete' key")
+    if captured_delete_key:
+        config.ispeak.delete_key = captured_delete_key
+    time.sleep(CWAIT)
 
     # configure delete keywords
     del_def = ["delete", "undo"]
@@ -127,17 +106,69 @@ def setup_voice(config_manager: ConfigManager) -> None:
     else:
         config.ispeak.delete_keyword = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
         del_nxt = ", ".join(config.ispeak.delete_keyword)
+    time.sleep(CWAIT)
+
     # configure escape key
     print_option_header(
-        "delete_key",
-        "key to trigger deletion of previous input via backspace",
-        str(config.ispeak.delete_key),
+        "escape_key",
+        "key to escape current recording session without outputting transcription",
+        str(config.ispeak.escape_key),
     )
-    log(f"[bold][yellow]!~~~~~~![/yellow] [white]Only one key permitted; to include modifier keys such as Ctrl or Alt, adjust the config by hand with the notation of: <alt>+<...>[/white][/bold]")
-    captured_delete_key = capture_key("press your desired 'delete' key")
-    if captured_delete_key:
-        config.ispeak.delete_key = captured_delete_key
-    time.sleep(0.5)
+    log(SINGLE_KEY_ONLY)
+    captured_escape_key = capture_key("press your desired 'escape' key")
+    if captured_escape_key:
+        config.ispeak.escape_key = captured_escape_key
+    time.sleep(CWAIT)
+
+    # configure push-to-talk key
+    print_option_header("push_to_talk_key", "key to initialize recording session", config.ispeak.push_to_talk_key)
+    log(SINGLE_KEY_ONLY)
+    captured_key = capture_key("press your desired PTT key")
+    if captured_key:
+        config.ispeak.push_to_talk_key = captured_key
+    time.sleep(CWAIT)
+
+    # configure push-to-talk key delay
+    print_option_header(
+        "push_to_talk_key_delay",
+        "execution delay after PTT key press (helps prevent mistypes)",
+        f"{config.ispeak.push_to_talk_key_delay} seconds",
+    )
+    log(f"\n[bold][blue]>[/blue][/bold] [white]enter delay in seconds {OR_ENTER}[/white]")
+    delay = float_ask(default=config.ispeak.push_to_talk_key_delay)
+    config.ispeak.push_to_talk_key_delay = delay
+    time.sleep(CWAIT)
+
+    # configure recording indicator
+    print_option_header(
+        "recording_indicator",
+        "character/word output when recording starts",
+        config.ispeak.recording_indicator,
+    )
+    log(f"\n[bold][blue]>[/blue][/bold] [white]enter new indicator {OR_ENTER}[/white]")
+    new_indicator = ask(default=config.ispeak.recording_indicator)
+    if new_indicator:
+        config.ispeak.recording_indicator = new_indicator
+    time.sleep(CWAIT)
+
+    # configure delete keywords
+    output = config.ispeak.output
+    output_str = output if output else "false"
+    print_option_header(
+        "output",
+        "mode of output, either 'keyboard' (type), 'clipboard' (copy), or 'false' for none",
+        output_str,
+    )
+    log(f"\n[bold][blue]>[/blue][/bold] [white]enter 'keyboard', 'clipboard', 'false' {OR_ENTER}[/white]")
+    ouput = ask(default=output_str).lower()
+    if ouput == "false":
+        config.ispeak.output = False
+    elif ouput == "keyboard" or ouput == "clipboard":
+        config.ispeak.output = ouput
+    else:
+        config.ispeak.output = "keyboard"
+    ouput = config.ispeak.output
+    time.sleep(CWAIT)
 
     # configure strip whitespace
     print_option_header(
@@ -148,7 +179,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
     log("\n[bold][blue]>[/blue][/bold] [white]enable whitespace stripping? [dim](true/false)[/dim][/white]")
     strip_whitespace = confirm("[bold]>[/bold]", default=config.ispeak.strip_whitespace)
     config.ispeak.strip_whitespace = strip_whitespace
-    time.sleep(1)
+    time.sleep(CWAIT)
 
     # configure language
     language = config.realtime_stt.language
@@ -159,7 +190,7 @@ def setup_voice(config_manager: ConfigManager) -> None:
     log(f"\n[bold][blue]>[/blue][/bold] [white]enter language code {OR_ENTER}[/white]")
     language = ask(default=config.realtime_stt.language)
     config.realtime_stt.language = language
-    time.sleep(1)
+    time.sleep(CWAIT)
 
     # configure model size
     model = config.realtime_stt.model
@@ -170,20 +201,28 @@ def setup_voice(config_manager: ConfigManager) -> None:
     log(f"\n[bold][blue]>[/blue][/bold] [white]enter model size {OR_ENTER}[/white]")
     model = ask(default=config.realtime_stt.model, choices=VALID_MODELS)
     config.realtime_stt.model = model
-    time.sleep(1)
+    time.sleep(CWAIT)
+
+    # configure save format
+    print_option_header("save", "format to save this config file as", "json")
+    log("- [bold]options[/bold]: json or toml")
+    log(f"\n[bold][blue]>[/blue][/bold] [white]enter format {OR_ENTER}[/white]")
+    save_fmt: Literal["json", "toml"] = ask(default="json", choices=["json", "toml"])  # type: ignore
+    time.sleep(CWAIT)
 
     # save configuration
     try:
-        save_path = config_manager.save_config(config)
+        save_path = config_manager.save_config(config, save_fmt)
         log(f"\n[bold][cyan]Configuration Saved:[/cyan][/bold] {save_path}")
         log("\n[bold][cyan]>> ispeak[/cyan][/bold]")
         log(f"  binary                 : [blue]{config.ispeak.binary}[/blue]")
+        log(f"  delete_key             : [blue]{config.ispeak.delete_key}[/blue]")
+        log(f"  delete_keyword         : [blue]{del_nxt}[/blue]")
+        log(f"  escape_key             : [blue]{config.ispeak.escape_key}[/blue]")
+        log(f"  output                 : [blue]{config.ispeak.output!s}[/blue]")
         log(f"  push_to_talk_key       : [blue]{config.ispeak.push_to_talk_key}[/blue]")
         log(f"  push_to_talk_key_delay : [blue]{config.ispeak.push_to_talk_key_delay}[/blue]s")
-        log(f"  escape_key             : [blue]{config.ispeak.escape_key}[/blue]")
         log(f"  recording_indicator    : [blue]{config.ispeak.recording_indicator}[/blue]")
-        log(f"  delete_keyword         : [blue]{del_nxt}[/blue]")
-        log(f"  delete_key             : [blue]{config.ispeak.delete_key}[/blue]")
         log(f"  strip_whitespace       : [blue]{config.ispeak.strip_whitespace}[/blue]")
         log("\n[bold][cyan]>> realtime_stt[/cyan][/bold]")
         log(f"  language               : [blue]{config.realtime_stt.language}[/blue]")

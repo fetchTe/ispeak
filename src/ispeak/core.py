@@ -2,9 +2,11 @@ import subprocess
 import time
 from collections.abc import Callable
 from datetime import datetime
+from typing import Literal
 
 from pynput import keyboard
 from pynput.keyboard import Controller, Key
+from pyperclip import copy
 
 from .config import AppConfig
 from .console_helper import log, log_erro, log_warn
@@ -157,8 +159,9 @@ class VoiceInput:
         rm_indicator = False
         try:
             self.recorder.start()
+            recording_indicator = self.config.ispeak.recording_indicator
             # type recording indicator
-            if not self.config.ispeak.no_output:
+            if len(recording_indicator) and self.config.ispeak.output is not False:
                 Controller().type(self.config.ispeak.recording_indicator)
                 rm_indicator = True
         except Exception as e:
@@ -205,7 +208,7 @@ class VoiceInput:
 
     def _handle_delete(self, chars_to_delete: int = 0) -> None:
         """Handles actual backspace of chars"""
-        if not chars_to_delete or self.config.ispeak.no_output:
+        if not chars_to_delete or self.config.ispeak.output is False:
             return
         cont = Controller()
         for _ in range(chars_to_delete):
@@ -255,15 +258,17 @@ class VoiceInput:
         self.stop()
 
 
-def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
+def runner(
+    bin_args: list, bin_cli: str | None, cli_output: Literal["clipboard", False, None], config: AppConfig
+) -> int:
     """
     Run bin/executable or bin-less with voice integration
 
     Args:
-        bin_args: Arguments to pass to bin command.
-        bin_cli: Override executable from command line.
-        config: Application configuration with CLI overrides applied.
-
+        bin_args: Arguments to pass to bin command
+        bin_cli: Override executable from command line
+        cli_output: If output mode is copy, no-output, or none - default
+        config: Application configuration with CLI overrides applied
     Returns:
         Exit code from bin execution.
     """
@@ -275,11 +280,16 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
     # enable binary-less mode if executable is empty/null
     is_standalone = not executable
     cmd = [executable, *bin_args] if executable else []
+    is_noop = cli_output is False or config.ispeak.output is False
+    is_copy = not is_noop and "clipboard" in [cli_output, config.ispeak.output]
+    # cli_output
+    output = "none" if is_noop else "clipboard" if is_copy else "keyboard"
     mode = "standalone" if is_standalone else "binary -> {}".format(" ".join(cmd))
 
     log("[bold][red]◉[/red] [blue]init[/blue][/bold]")
     log(f"[blue]  mode        :[/blue] {mode}")
     log(f"[blue]  model       :[/blue] {config.realtime_stt.model}")
+    log(f"[blue]  output      :[/blue] {output}")
     log(f"[blue]  language    :[/blue] {config.realtime_stt.language or 'auto'}")
     log(f"[blue]  push-to-talk:[/blue] {config.ispeak.push_to_talk_key}")
     log(f"[blue]  config      :[/blue] {config.config_path!s}\n")
@@ -299,11 +309,21 @@ def runner(bin_args: list, bin_cli: str | None, config: AppConfig) -> int:
             # show styled version in terminal
             log(f"[dim][white]##[/white][/dim] {timestamp}\n{text}\n\n", end="")
 
-        if not config.ispeak.no_output:
+        # noop
+        if is_noop:
+            return
+        # copy
+        if is_copy:
             try:
-                Controller().type(text + " ")
+                copy(text + " ")
             except Exception as e:
                 log_erro(f"typing text: {e}")
+            return
+        # type
+        try:
+            Controller().type(text + " ")
+        except Exception as e:
+            log_erro(f"typing text: {e}")
 
     # try to start voice input
     try:
