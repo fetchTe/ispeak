@@ -1,6 +1,16 @@
-# [RealtimeSTT](https://github.com/KoljaB/RealtimeSTT) Config Options
+# STT (speech-to-text) Options/Config Reference
 
-**NOTE**: To save you time and effort, the `wakeword*` is intentionally excluded in favor of a hotkey-driven workflow. While it is certainly possible to use the "wakeword," with a few minor changes, you'll regret not heeding this warning somewhere between the twentieth and umpteenth time you're forced to say it.
+> For futher docs/details visit [`RealtimeSTT`](https://github.com/KoljaB/RealtimeSTT) and/or the speech-to-text engine itself [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper).
+
+### ▎Notes
+
+To save you time and effort, two features of RealtimeSTT have been intentionally omitted
+
+1. `wakeword*` is excluded in favor of a hotkey-driven workflow. While it is certainly possible to use the "wakeword," with a few minor changes, you'll regret it somewhere between the twentieth and umpteenth time you're forced to say it.
+2. `realtime*` is only practical for real-time applications, and even then, it's a novelty feature that is more or less pointless at the end of the day
+
+
+### ▎All `stt` Options
 
 ```
 - model (str, default="tiny"): Specifies the size of the transcription
@@ -10,7 +20,8 @@
     'large-v2'.
     If a specific size is provided, the model is downloaded
     from the Hugging Face Hub.
-- download_root (str, default=None): Specifies the root path were the Whisper models 
+- download_root (str, default=None): Specifies the root path
+    were the Whisper models 
   are downloaded to. When empty, the default is used. 
 - language (str, default=""): Language code for speech-to-text engine.
     If not specified, the model will attempt to detect the language
@@ -223,9 +234,9 @@
     log messages for the recording worker, that processes the audio
     chunks.
 - faster_whisper_vad_filter (bool, default=True): If set to True,
-    the system will additionally use the VAD filter from the faster_whisper library
-    for voice activity detection. This filter is more robust against
-    background noise but requires additional GPU resources.
+    the system will additionally use the VAD filter from the faster_whisper
+    library for voice activity detection. This filter is more robust
+    against background noise but requires additional GPU resources.
 - normalize_audio (bool, default=False): If set to True, the system will
     normalize the audio to a specific range before processing. This can
     help improve the quality of the transcription.
