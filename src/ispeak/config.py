@@ -126,8 +126,6 @@ class CodeSpeakConfig:
     log_file: str | None = None
     # default output action (false disables output like old no_output: true)
     output: Literal["keyboard", "clipboard", False] = "keyboard"
-    # regex replacement rules - dict of patterns/replacements or list of file paths
-    replace: dict[str, str] | list[str] | None = None
     # list of words/phrases, when detected will delete previous output
     delete_keyword: list[str] | bool | None = True
     # key to delete last/previous output
@@ -337,7 +335,6 @@ class ConfigManager:
         use_toml = save_fmt == "toml"
         save_ext = "toml" if use_toml else "json"
         save_path = self.get_config_dir() / "ispeak" / f"ispeak.{save_ext}"
-        save_path = Path(f"/tmp/ispeak/ispeak.{save_ext}")
 
         # Ensure parent directory exists
         save_path.parent.mkdir(parents=True, exist_ok=True)
