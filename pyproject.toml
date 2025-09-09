@@ -1,15 +1,24 @@
 [project]
 name = "ispeak"
 version = "0.1.1"
-description = "A keyboard-centric CLI speech-to-text tool that works wherever you can type"
-readme = "README.md"
-authors = [{ name = "te", email = "git@fetchte.com" }]
 requires-python = ">=3.11"
+description = "A keyboard-centric inline speech-to-text CLI tool that works wherever you can type"
+readme = "README.md"
+keywords = ["cli", "speech-to-text", "stt", "whisper", "inline", "keyboard", "clipboard", "aider", "codex", "claude"]
+authors = [{ name = "te", email = "git@fetchte.com" }]
+license = "MIT"
 dependencies = [
   "pynput>=1.8.1",
   "pyperclip>=1.9.0",
   "realtimestt>=0.3.104",
 ]
+
+[project.urls]
+Homepage = "https://github.com/fetchTe/ispeak"
+Documentation = "https://github.com/fetchTe/ispeak#quick-start"
+Repository = "https://github.com/fetchTe/ispeak.git"
+Issues = "https://github.com/fetchTe/ispeak/issues"
+Changelog = "https://github.com/fetchTe/ispeak/blob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 cpu = [
