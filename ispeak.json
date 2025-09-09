@@ -1,7 +1,7 @@
 {
   "ispeak": {
     "binary": null,
-    "push_to_talk_key": "end",
+    "push_to_talk_key": "shift_l",
     "push_to_talk_key_delay": 0.2,
     "escape_key": "esc",
     "log_file": null,
