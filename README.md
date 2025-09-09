@@ -44,7 +44,7 @@ cd ispeak
 uv tool install .                # CUDA (default)
 uv tool install ".[plugin]"      # CUDA + plugin deps
 uv tool install ".[cpu]"         # CPU-only (no CUDA)
-uv tool install ".[cpu][plugin]" # CPU-only (no CUDA) + plugin deps
+uv tool install ".[cpu,plugin]"  # CPU-only (no CUDA) + plugin deps
 uv tool install ".[cu118]"       # CUDA v11.8
 uv tool install ".[cu128]"       # CUDA v12.8
 
@@ -107,14 +107,14 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 {
   "ispeak": {
     "binary": null,
-    "delete_key": null,
-    "delete_keyword": ["delete", "undo"],
+    "push_to_talk_key": "shift_l",
+    "push_to_talk_key_delay": 0.3,
     "escape_key": "esc",
     "log_file": null,
     "output": "keyboard",
-    "push_to_talk_key": "shift_l",
-    "push_to_talk_key_delay": 0.2,
     "recording_indicator": ";",
+    "delete_keyword": ["delete", "undo"],
+    "delete_key": null,
     "strip_whitespace": true
   },
   "stt": {
@@ -129,7 +129,6 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
     "initial_prompt": null,
     "no_log_file": true,
     "normalize_audio": true,
-    "post_speech_silence_duration": 0.2,
     "spinner": false
   },
   "plugin": {}
@@ -180,7 +179,6 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 - `initial_prompt` (null/str): Initial prompt to be fed to the main transcription model
 - `no_log_file` (bool): Skip debug log file creation
 - `normalize_audio` (bool): Normalize audio range before processing for better transcription quality
-- `post_speech_silence_duration` (float): How long to wait after you stop talking
 - `spinner` (bool): Show spinner animation (set to `false` to avoid terminal conflicts)
 
 
@@ -188,7 +186,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 ```json
 {
   "model": "Systran/faster-distil-whisper-medium.en",
-  "initial_prompt": "Hello, welcome to my presentation.",
+  "initial_prompt": "Welcome back, this discussion covers coherence, cohesion, and logical flow in programming.",
   "beam_size": 8,
   "post_speech_silence_duration": 0.4,
 }

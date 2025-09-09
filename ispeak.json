@@ -2,7 +2,7 @@
   "ispeak": {
     "binary": null,
     "push_to_talk_key": "shift_l",
-    "push_to_talk_key_delay": 0.2,
+    "push_to_talk_key_delay": 0.3,
     "escape_key": "esc",
     "log_file": null,
     "output": "keyboard",
@@ -23,7 +23,6 @@
     "initial_prompt": null,
     "no_log_file": true,
     "normalize_audio": true,
-    "post_speech_silence_duration": 0.2,
     "spinner": false
   },
 
