@@ -12,6 +12,7 @@ A keyboard-centric inline speech-to-text tool that works wherever you can type; 
 + **Cross-Platform** - Works on [Linux](#linux)/[macOS](#macos)/[Windows](#windows) with GPU or CPU
 
 
+
 ## Quick Start
 
 1. **Run**: `ispeak` (add `-b <program>` to target a specific executable)
@@ -22,6 +23,7 @@ A keyboard-centric inline speech-to-text tool that works wherever you can type; 
 
 
 > **IMPORTANT**: The output goes to the application that currently has keyboard focus, which allows you to use the same `ispeak` instance between applications. This may be a feature or a bug.
+
 
 ### ▎Install
 
@@ -139,6 +141,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 
 <br/>
 
+
 ### ▎ `ispeak`
 
 - `binary` (str/null): Default executable to launch with voice input
@@ -158,6 +161,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 > ╸ Special keys: `end`, `alt_l`, `ctrl_l` - (see [pynput Key class](https://github.com/moses-palmer/pynput/blob/74c5220a61fecf9eec0734abdbca23389001ea6b/lib/pynput/keyboard/_base.py#L162)) <br/>
 > ╸ Key combinations: `<ctrl>+<alt>+h`, `<shift>+<f1>`<br/>
 <br/>
+
 
 ### ▎`stt`
 > A full config reference can be found in [`./docs/stt-options.md`](./docs/stt-options.md) <br/>
@@ -183,6 +187,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 
 
 > Apart from using [faster-distil-whisper-large-v3](https://huggingface.co/Systran/faster-distil-whisper-large-v3), I've had good results with the following
+
 ```json
 {
   "model": "Systran/faster-distil-whisper-medium.en",
@@ -197,12 +202,13 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 <br/>
 
 
+
 ## Plugin System
 
 The plugin system processes transcribed text through a configurable pipeline of text transformation plugins. Plugins are loaded and executed in order based on their configuration.
 
-### Plugin Configuration
 
+### Plugin Configuration
 Each plugin can be configured with the following standard fields:
 
 - `use` (bool): Enable/disable the plugin (default: `true`)
@@ -211,7 +217,6 @@ Each plugin can be configured with the following standard fields:
 
 
 ### ▎ `replace`
-
 Regex-based text replacement, mainly for simple string replacements, but also capable of handling Regex patterns with capture groups and flags.
 
 ```json5
@@ -255,7 +260,6 @@ Regex-based text replacement, mainly for simple string replacements, but also ca
 
 
 ### ▎ `num2text` 
-
 Convert digits to text numbers, like "42" into "forty-two" via [`num2words`](https://github.com/savoirfairelinux/num2words)
 
 ```json5
@@ -282,8 +286,8 @@ Convert digits to text numbers, like "42" into "forty-two" via [`num2words`](htt
 
 <br/>
 
-### ▎ `text2num`
 
+### ▎ `text2num`
 Convert text numbers to digits, like "forty-two" into "42" via [`text_to_num`](https://github.com/allo-media/text2num)
 
 
@@ -306,11 +310,6 @@ Convert text numbers to digits, like "forty-two" into "42" via [`text_to_num`](h
 > **IMPORTANT**: the `threshold` may, or, may not work if cardinal; check out the `TestWishyWashyThreshold` test for more dets<br/>
 
 <br/>
-
-
-
-
-
 
 
 
@@ -453,6 +452,7 @@ Virtual events sent by *other* processes may not be received. This library takes
    make check       # run all checks: lint, type, and format
    make test        # run all tests
    ```
+
 6. Commit your changes: `git commit -m 'feat: add amazing feature'`
 7. Push to your branch: `git push origin feature/amazing-feature`
 8. Open a Pull Request with a clear description of your changes
