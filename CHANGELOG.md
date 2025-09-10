@@ -1,4 +1,4 @@
-## [`v0.2.0`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.0) - `2025-09-09`
+## [`v0.2.2`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.2) - `2025-09-10`
 
 **BREAKING CHANGES**
 - Rename `realtime_stt` configuration key to `stt` for clearer naming
@@ -11,6 +11,7 @@
 - Delete key functionality for triggering voice-based delete commands
 - TOML configuration file support alongside existing JSON format
 - Build targets for plugin dependency installation and virtual environment setup
+- Full test and lint `on-release.yml` action
 
 **Changed**
 - Default push-to-talk key changed from 'end' to 'shift_l' for better accessibility
