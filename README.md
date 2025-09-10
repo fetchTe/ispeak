@@ -59,7 +59,7 @@ pip install RealtimeSTT pynput pyperclip num2words text2num
 ### ▎Usage
 
 ```crystal
-# USAGE (v0.2.4)
+# USAGE (v0.2.5)
   ispeak [options...]
 
 # OPTIONS

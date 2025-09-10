@@ -1,3 +1,15 @@
+## [`v0.2.5`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.5) - `2025-09-10`
+
+### ▎Added
+- README ispeak logo and minimum python version tag
+
+
+### ▎Changed
+- Replace README relative links with absolute URLs in
+- Remove README install/provides-extra examples
+
+
+
 ## [`v0.2.4`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.4) - `2025-09-10`
 
 ### ▎BREAKING
