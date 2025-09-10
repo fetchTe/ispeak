@@ -51,6 +51,8 @@ jobs:
 
       - name: make::install_cpu
         run : pdpmake install_cpu
+      - name: make::install_plugin
+        run : pdpmake install_plugin
       - name: make::install_dev
         run : pdpmake install_dev
 

@@ -64,6 +64,21 @@ jobs:
 
       - name: make::install_cpu
         run : pdpmake install_cpu
+      - name: make::install_plugin
+        run : pdpmake install_plugin
+      - name: make::install_dev
+        run : pdpmake install_dev
+
+      - name: make::check::format
+        run: pdpmake format
+      - name: make::check::lint
+        run: pdpmake lint
+      - name: make::check::type
+        run: pdpmake type
+      - name: make::check::test
+        env:
+          DISPLAY: :0
+        run: xvfb-run -a -s "-screen 0 1024x768x24" pdpmake test
 
       - name: make::build
         env:
