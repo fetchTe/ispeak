@@ -2,7 +2,7 @@
 
 A keyboard-centric inline speech-to-text tool that works wherever you can type; [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), and CLI/AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), [`claude`](https://claude.ai/code), or whatever you fancy
 
-<img align="right"  width="188" height="204" alt="ispeak logo" src="https://github.com/user-attachments/assets/9e1e8018-3408-4712-88a9-c658a8da12b9" />
+<img align="right"  width="188" height="204" alt="ispeak logo" src="https://raw.githubusercontent.com/fetchTe/ispeak/master/docs/ispeak-logo.png" />
 
 + **Multilingual, Local, Fast** - Powered via [faster-whisper](https://github.com/SYSTRAN/faster-whisper) 
 + **Transcribed Speech** - As keyboard (type) or clipboard (copy) events
@@ -14,6 +14,8 @@ A keyboard-centric inline speech-to-text tool that works wherever you can type; 
 
 
 ## Quick Start
+
+<img align="right" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" />
 
 1. **Run**: `ispeak` (add `-b <program>` to target a specific executable)
 2. **Activate**: Press the hotkey (default `shift_l`) - the 'recording indicator' is text-based (default `;`)
@@ -27,48 +29,36 @@ A keyboard-centric inline speech-to-text tool that works wherever you can type; 
 
 ### ▎Install
 
-```bash
+```sh
 #> copy'n'paste system/global install
 pip install ispeak
 uv tool install ispeak
-# cpu-only; it's better to simply clone & run: uv tool install ".[cpu]"
-uv pip install --system ispeak --torch-backend=cpu
+# cpu-only + plugins; it's better to simply clone & run: uv tool install ".[cpu,plugin]"
+uv pip install --system "ispeak[plugin]" --torch-backend=cpu
 ```
 > [`uv`](https://docs.astral.sh/uv/) is a python package installer
 
 
-```bash
+```sh
 #> clone'n'install
-git clone https://github.com/fetchTe/ispeak
-cd ispeak
+git clone https://github.com/fetchTe/ispeak && cd ispeak
 
-# global install
-uv tool install .                # CUDA (default)
-uv tool install ".[plugin]"      # CUDA + plugin deps
-uv tool install ".[cpu]"         # CPU-only (no CUDA)
-uv tool install ".[cpu,plugin]"  # CPU-only (no CUDA) + plugin deps
-uv tool install ".[cu118]"       # CUDA v11.8
-uv tool install ".[cu128]"       # CUDA v12.8
+# global install (extra: cpu, cu118, cu128, plugin)
+uv tool install ".[plugin]"      # CUDA + plugins
+uv tool install ".[cpu,plugin]"  # CPU-only (no CUDA) + plugins
 
-# local/dev install (--extra: cpu, cu118, cu128, plugin)
-uv sync                            # with CUDA (default)
-uv sync --extra cpu --extra plugin # CPU-only (no CUDA) + all plugin deps
+# local install (extra: cpu, cu118, cu128, plugin)
+uv sync --group dev                # CUDA (default) + dev (ruff, pyright, pytest)
+uv sync --extra cpu --extra plugin # CPU-only (no CUDA) + plugins
 
-# pip/dev install (with CUDA)
-pip install RealtimeSTT pynput
-
-# pip/dev install (CPU-only)
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-pip install RealtimeSTT pynput
-
-# pip/plugins
-pip install num2words text2num
+# pip install + plugins
+pip install RealtimeSTT pynput pyperclip num2words text2num
 ```
 
 
 ### ▎Usage
 
-```bash
+```crystal
 # USAGE (v0.2.4)
   ispeak [options...]
 
@@ -164,7 +154,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 
 
 ### ▎`stt`
-> A full config reference can be found in [`./docs/stt-options.md`](./docs/stt-options.md) <br/>
+> A full config reference can be found in [`./docs/stt-options.md`](https://github.com/fetchTe/ispeak/blob/master/docs/stt-options.md) <br/>
 > ╸ [`RealtimeSTT`](https://github.com/KoljaB/RealtimeSTT) handles the input/mic setup and processing <br/>
 > ╸ [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper) is the actual speech-to-text engine implementation
 
@@ -203,13 +193,9 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 
 
 
-## Plugin System
+## Plugin
 
-The plugin system processes transcribed text through a configurable pipeline of text transformation plugins. Plugins are loaded and executed in order based on their configuration.
-
-
-### Plugin Configuration
-Each plugin can be configured with the following standard fields:
+The plugin system processes transcribed text through a configurable pipeline of text transformation plugins. Plugins are loaded and executed in order based on their configuration, and each can be configured with the following fields:
 
 - `use` (bool): Enable/disable the plugin (default: `true`)
 - `order` (int): Execution order - plugins run in ascending order (default: `999`)
@@ -256,7 +242,7 @@ Regex-based text replacement, mainly for simple string replacements, but also ca
 ```
 > **Flags**: Use `/pattern/flags` format (supports `i`, `m`, `s`, `x` flags) <br/>
 > **Substitution**: Use `\1`, `\2` or `\g<1>`, `\g<2>` syntax <br/>
-> **Tests**: `./tests/test_plugin_replace.py` <br/>
+> **Tests**: [`./tests/test_plugin_replace.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_replace.py) <br/>
 
 
 ### ▎ `num2text` 
@@ -281,7 +267,7 @@ Convert digits to text numbers, like "42" into "forty-two" via [`num2words`](htt
   }
 }
 ```
-> **Tests**: `./tests/test_plugin_num2text.py`  <br/>
+> **Tests**: [`./tests/test_plugin_num2text.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_num2text.py)  <br/>
 > **Dependency**: [`num2words`](https://github.com/savoirfairelinux/num2words) -> `uv pip install num2words` <br/>
 
 <br/>
@@ -305,7 +291,7 @@ Convert text numbers to digits, like "forty-two" into "42" via [`text_to_num`](h
   }
 }
 ```
-> **Tests**: `./tests/test_plugin_text2num.py`  <br/>
+> **Tests**: [`./tests/test_plugin_text2num.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_text2num.py)  <br/>
 > **Dependency**: [`text_to_num`](https://github.com/allo-media/text2num) -> `uv pip install text_to_num` <br/>
 > **IMPORTANT**: the `threshold` may, or, may not work if cardinal; check out the `TestWishyWashyThreshold` test for more dets<br/>
 
@@ -357,7 +343,7 @@ When running under *uinput*, the following must be true:
 
 The latter requirement for *X* means that running *pynput* over *SSH* generally will not work. To work around that, make sure to set `$DISPLAY`:
 
-``` bash
+``` sh
 $ DISPLAY=:0 python -c 'import pynput'
 ```
 
@@ -447,7 +433,7 @@ Virtual events sent by *other* processes may not be received. This library takes
 4. Make your changes following the existing code style
 5. Run quality checks & test:
 
-   ```bash
+   ```sh
    make format_fix  # auto-fix format -> ruff format
    make check       # run all checks: lint, type, and format
    make test        # run all tests
