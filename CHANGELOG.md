@@ -1,4 +1,4 @@
-## [`v0.2.2`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.2) - `2025-09-10`
+## [`v0.2.4`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.4) - `2025-09-10`
 
 ### ▎BREAKING
 - Rename `realtime_stt` configuration key to `stt` for clearer naming
