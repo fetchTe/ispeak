@@ -1,11 +1,12 @@
 ## [`v0.2.2`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.2) - `2025-09-10`
 
-**BREAKING CHANGES**
+### ▎BREAKING
 - Rename `realtime_stt` configuration key to `stt` for clearer naming
 - Replace `no_output` boolean with `output` setting (`keyboard`, `clipboard`, or `false`) 
 - Move text replacement rules from root config to `plugin.replace` section
 
-**Added**
+
+### ▎Added
 - Plugin system with built-in plugins for text transformations (num2text, text2num, replace)
 - Clipboard output support via new `output` configuration option and `--copy` CLI flag
 - Delete key functionality for triggering voice-based delete commands
@@ -13,7 +14,8 @@
 - Build targets for plugin dependency installation and virtual environment setup
 - Full test and lint `on-release.yml` action
 
-**Changed**
+
+### ▎Changed
 - Default push-to-talk key changed from 'end' to 'shift_l' for better accessibility
 - Configuration structure: `realtime_stt` renamed to `stt`
 - Delete keywords configuration simplified to `delete_keyword` for clarity
@@ -24,7 +26,7 @@
 
 ## [`v0.1.1`](https://github.com/fetchTe/ispeak/releases/tag/v0.1.1) - `2025-09-03`
 
-**BREAKING CHANGES**
+### ▎BREAKING
 - Rename project from `code_speak` to `ispeak` for broader AI tool support
 - Remove `pyautogui` dependency in favor of `pynput` keyboard for better reliability
 - Remove `fast_delete` and `pyautogui_interval` configuration options
@@ -32,7 +34,8 @@
 - Rename `--log` to `--log-file` for clarity
 - Rename configuration option `no_typing` to `no_output`
 
-**Added**
+
+### ▎Added
 - Standalone voice input operation mode (binary-less default)
 - Text replacement with regex-based rules via `replace` config option
 - Custom configuration file path support via `-c, --config` CLI option
@@ -44,7 +47,8 @@
 - GitHub Actions CI pipeline with automated testing and linting
 - Test suite with proper pytest configuration
 
-**Changed**
+
+### ▎Changed
 - Python version requirement lowered to 3.10 for broader compatibility
 - Configuration handling centralized with better validation
 - Voice input test instructions and stopping mechanism
@@ -54,7 +58,8 @@
 - Remove Rich library dependency for logging and interactive prompts
 - Shell script removal - use `uv` directly for execution
 
-**Fixed**
+
+### ▎Fixed
 - Graceful handling of recorder start failures
 - Empty text result handling in recorder
 - Key capture now correctly stops listening after key press
