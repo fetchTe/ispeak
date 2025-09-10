@@ -244,6 +244,8 @@ Regex-based text replacement, mainly for simple string replacements, but also ca
 > **Substitution**: Use `\1`, `\2` or `\g<1>`, `\g<2>` syntax <br/>
 > **Tests**: [`./tests/test_plugin_replace.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_replace.py) <br/>
 
+<br/>
+
 
 ### ▎ `num2text` 
 Convert digits to text numbers, like "42" into "forty-two" via [`num2words`](https://github.com/savoirfairelinux/num2words)
