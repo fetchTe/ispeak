@@ -69,7 +69,7 @@ pip install num2words text2num
 ### ▎Usage
 
 ```bash
-# USAGE (v0.2.2)
+# USAGE (v0.2.3)
   ispeak [options...]
 
 # OPTIONS
