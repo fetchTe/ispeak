@@ -432,13 +432,11 @@ Virtual events sent by *other* processes may not be received. This library takes
 3. Install development dependencies: `uv sync --group dev`
 4. Make your changes following the existing code style
 5. Run quality checks & test:
-
    ```sh
    make format_fix  # auto-fix format -> ruff format
    make check       # run all checks: lint, type, and format
    make test        # run all tests
    ```
-
 6. Commit your changes: `git commit -m 'feat: add amazing feature'`
 7. Push to your branch: `git push origin feature/amazing-feature`
 8. Open a Pull Request with a clear description of your changes
