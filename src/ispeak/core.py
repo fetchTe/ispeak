@@ -5,13 +5,40 @@ from datetime import datetime
 from typing import Literal
 
 from pynput import keyboard
-from pynput.keyboard import Controller, Key
+from pynput.keyboard import Controller, Key, KeyCode
 from pyperclip import copy
 
 from .config import AppConfig
 from .console_helper import log, log_erro, log_warn
 from .plugin import PluginRegistry
 from .recorder import AudioRecorder, ModelSTTRecorder
+
+
+def type_output(text: str = "", interval: float | None = None, tap: tuple[KeyCode, int] | None = None) -> None:
+    """
+    Keyboard/pynput typper & tapper wrapper
+
+    Args:
+        text: Text to type
+        interval: Delay to apply after every typed char
+        tap: If to "tap" the given KeyCode x times
+    """
+    cont = Controller()
+    # tap
+    if tap:
+        key, x = tap
+        for _ in range(x):
+            if interval:
+                time.sleep(interval)
+            cont.tap(key)
+        return
+    # type
+    if not interval:
+        cont.type(text)
+        return
+    for char in text:
+        time.sleep(interval)
+        cont.type(char)
 
 
 class TextProcessor:
@@ -162,7 +189,7 @@ class VoiceInput:
             recording_indicator = self.config.ispeak.recording_indicator
             # type recording indicator
             if len(recording_indicator) and self.config.ispeak.output is not False:
-                Controller().type(self.config.ispeak.recording_indicator)
+                type_output(recording_indicator, self.config.ispeak.keyboard_interval)
                 rm_indicator = True
         except Exception as e:
             log_erro(f"Failed to start recording: {e}")
@@ -210,9 +237,8 @@ class VoiceInput:
         """Handles actual backspace of chars"""
         if not chars_to_delete or self.config.ispeak.output is False:
             return
-        cont = Controller()
-        for _ in range(chars_to_delete):
-            cont.tap(Key.backspace.value)
+        tap: tuple[KeyCode, int] = (Key.backspace.value, chars_to_delete)
+        type_output(interval=self.config.ispeak.keyboard_interval, tap=tap)
 
     def _handle_delete_indicator(self) -> None:
         """Handle delete of rec indicator"""
@@ -321,7 +347,7 @@ def runner(
             return
         # type
         try:
-            Controller().type(text + " ")
+            type_output(text + " ", config.ispeak.keyboard_interval)
         except Exception as e:
             log_erro(f"typing text: {e}")
 

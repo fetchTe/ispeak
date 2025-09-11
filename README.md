@@ -99,14 +99,15 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 {
   "ispeak": {
     "binary": null,
-    "push_to_talk_key": "shift_l",
-    "push_to_talk_key_delay": 0.3,
+    "delete_key": null,
+    "delete_keyword": ["delete", "undo"],
     "escape_key": "esc",
+    "keyboard_interval": 0,
     "log_file": null,
     "output": "keyboard",
+    "push_to_talk_key": "shift_l",
+    "push_to_talk_key_delay": 0.3,
     "recording_indicator": ";",
-    "delete_keyword": ["delete", "undo"],
-    "delete_key": null,
     "strip_whitespace": true
   },
   "stt": {
@@ -138,6 +139,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 - `delete_key` (str/null): Key to trigger deletion of previous input via backspace
 - `delete_keyword` (list/bool): Words that trigger deletion of previous input via backspace (must be exact)
 - `escape_key` (str/null): Key to cancel current recording without transcription
+- `keyboard_interval` (float/null): delay applied after each 'keyboard' character
 - `log_file` (str/null): Path to file for logging voice transcriptions
 - `output` (str/false): Mode of output; 'keyboard' (type), 'clipboard' (copy), or false for none
   - For all languages aside from English, using 'clipboard' is recommended
@@ -303,9 +305,10 @@ Convert text numbers to digits, like "forty-two" into "42" via [`text_to_num`](h
 
 ## Troubleshooting
 
-+ **Hotkey/Keyboard Issues**: Check/grant permissions see [linux](#linux), [macOS](#macos), [windows](#windows)
++ **Hotkey Issues**: Check/grant permissions see [linux](#linux), [macOS](#macos), [windows](#windows)
 + **Recording Indicator Misfire(s)**: Increase `push_to_talk_key_delay` (try 0.2-1.0)
-+ **Transcription Typing/Character Issues**: Try using `"output": "clipboard"`
++ **Typing/Character Issues**: Try using `"output": "clipboard"`
+  + If missing/skipping ASCII characters try using `"keyboard_interval": 0.1`
 + **Transcription Issues**: Try the CPU-only and/or the following minimal test code to isolate the problem:
 
 ```python

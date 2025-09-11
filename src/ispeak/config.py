@@ -126,6 +126,8 @@ class CodeSpeakConfig:
     log_file: str | None = None
     # default output action (false disables output like old no_output: true)
     output: Literal["keyboard", "clipboard", False] = "keyboard"
+    # delay applied after each 'keyboard' character (may be useful in some cases)
+    keyboard_interval: float | None = None
     # list of words/phrases, when detected will delete previous output
     delete_keyword: list[str] | bool | None = True
     # key to delete last/previous output

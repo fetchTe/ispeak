@@ -1,14 +1,15 @@
 {
   "ispeak": {
     "binary": null,
-    "push_to_talk_key": "shift_l",
-    "push_to_talk_key_delay": 0.3,
+    "delete_key": null,
+    "delete_keyword": ["delete", "undo"],
     "escape_key": "esc",
+    "keyboard_interval": 0,
     "log_file": null,
     "output": "keyboard",
+    "push_to_talk_key": "shift_l",
+    "push_to_talk_key_delay": 0.3,
     "recording_indicator": ";",
-    "delete_keyword": ["delete", "undo"],
-    "delete_key": null,
     "strip_whitespace": true
   },
   "stt": {
