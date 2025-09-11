@@ -1,6 +1,6 @@
 [project]
 name = "ispeak"
-version = "0.2.5"
+version = "0.3.0"
 requires-python = ">=3.11"
 description = "A keyboard-centric inline speech-to-text CLI tool that works wherever you can type"
 readme = "README.md"
@@ -78,7 +78,7 @@ explicit = true
 [project.scripts]
 ispeak = "ispeak.cli:main"
 
-# @TODO -> setup https://hatch.pypa.io/latest/config/build/
+# https://hatch.pypa.io/latest/config/build/
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

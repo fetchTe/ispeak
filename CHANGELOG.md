@@ -1,3 +1,13 @@
+## [`v0.3.0`](https://github.com/fetchTe/ispeak/releases/tag/v0.3.0) - `2025-09-11`
+
+### ▎Added
+- Configurable keyboard interval delay with `keyboard_interval` setting
+
+### ▎Changed
+- 30x faster CLI `--help` performance
+- README initial prompt recommendation
+
+
 ## [`v0.2.5`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.5) - `2025-09-10`
 
 ### ▎Added
