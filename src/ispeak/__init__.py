@@ -3,8 +3,6 @@
 from importlib.metadata import version
 
 from .config import AppConfig, CodeSpeakConfig, ConfigManager, ModelSTTConfig
-from .core import TextProcessor, VoiceInput
-from .recorder import AudioRecorder, ModelSTTRecorder
 
 try:
     __version__ = version("ispeak")
@@ -13,11 +11,7 @@ except Exception:
 
 __all__ = [
     "AppConfig",
-    "AudioRecorder",
     "CodeSpeakConfig",
     "ConfigManager",
     "ModelSTTConfig",
-    "ModelSTTRecorder",
-    "TextProcessor",
-    "VoiceInput",
 ]
