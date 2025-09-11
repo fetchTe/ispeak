@@ -1,4 +1,4 @@
-## [`v0.3.0`](https://github.com/fetchTe/ispeak/releases/tag/v0.3.0) - `2025-09-11`
+## [`v0.4.0`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.0) - `2025-09-11`
 
 ### ▎Added
 - Configurable keyboard interval delay with `keyboard_interval` setting
