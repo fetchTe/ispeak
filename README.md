@@ -181,7 +181,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 ```json
 {
   "model": "Systran/faster-distil-whisper-medium.en",
-  "initial_prompt": "Welcome back, this discussion covers coherence, cohesion, and logical flow in programming.",
+  "initial_prompt": "In this session, we'll discuss concise expression.",
   "beam_size": 8,
   "post_speech_silence_duration": 0.4,
 }
