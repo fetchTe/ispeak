@@ -2,6 +2,11 @@
 import sys
 from importlib.metadata import version
 
+try:
+    __version__ = version("ispeak")
+except Exception:
+    __version__ = "?.?.?"
+
 # ansi
 CYAN = "\033[96m"
 BLUE = "\033[94m"
@@ -16,15 +21,11 @@ HELP_NO_OUTPUT = "Disables all output/actions - typing, copying, and record indi
 HELP_SETUP = "Configure voice settings"
 HELP_TEST = "Test voice input functionality"
 HELP_COPY = "Use the 'clipboard' to copy instead of the 'keyboard' to type the output"
-HELP_CONFIG_SHOW = "Show current configuration"
+HELP_CONFIG_SHOW = "Print current configuration"
+HELP_VERSION_SHOW = "Print current version"
 
 
 def print_help() -> None:
-    try:
-        __version__ = version("ispeak")
-    except Exception:
-        __version__ = "unknown"
-
     help_text = f"""{D_WHITE}#{RESET} {B_WHITE}USAGE{RESET} {D_WHITE}(v{__version__}){RESET}
   {CYAN}ispeak{RESET} {D_WHITE}[{RESET}{BLUE}options{RESET}{D_WHITE}...]{RESET}
 
@@ -36,15 +37,19 @@ def print_help() -> None:
   {D_WHITE}-{RESET}{BLUE}p{RESET}{D_WHITE}, --{RESET}{BLUE}copy{RESET}        {HELP_COPY}
   {D_WHITE}-{RESET}{BLUE}s{RESET}{D_WHITE}, --{RESET}{BLUE}setup{RESET}       {HELP_SETUP}
   {D_WHITE}-{RESET}{BLUE}t{RESET}{D_WHITE}, --{RESET}{BLUE}test{RESET}        {HELP_TEST}
-  {D_WHITE}--{RESET}{BLUE}config-show{RESET}     {HELP_CONFIG_SHOW}"""
+  {D_WHITE}--{RESET}{BLUE}config-show{RESET}     {HELP_CONFIG_SHOW}
+  {D_WHITE}--{RESET}{BLUE}version{RESET}         {HELP_VERSION_SHOW}"""
     print(help_text)
 
 
 def main() -> int:
     # run help, unless --binary is present as we assume/apply the help flag to binary instead
     is_bin = "--binary" in sys.argv or "-b" in sys.argv
-    if (not is_bin and "--help" in sys.argv) or "-h" in sys.argv:
+    if not is_bin and ("-h" in sys.argv or "--help" in sys.argv):
         print_help()
+        return 0
+    elif not is_bin and ("--version" in sys.argv):
+        print(__version__)
         return 0
     else:
         from .cli_parse import cli_parse

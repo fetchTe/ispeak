@@ -2,6 +2,7 @@ import subprocess
 import time
 from collections.abc import Callable
 from datetime import datetime
+from importlib.metadata import version
 from typing import Literal
 
 from pynput import keyboard
@@ -12,6 +13,11 @@ from .config import AppConfig
 from .console_helper import log, log_erro, log_warn
 from .plugin import PluginRegistry
 from .recorder import AudioRecorder, ModelSTTRecorder
+
+try:
+    __version__ = version("ispeak")
+except Exception:
+    __version__ = "?.?.?"
 
 
 def type_output(text: str = "", interval: float | None = None, tap: tuple[KeyCode, int] | None = None) -> None:
@@ -312,13 +318,13 @@ def runner(
     output = "none" if is_noop else "clipboard" if is_copy else "keyboard"
     mode = "standalone" if is_standalone else "binary -> {}".format(" ".join(cmd))
 
-    log("[bold][red]◉[/red] [blue]init[/blue][/bold]")
+    log(f"[bold][red]◉[/red] [blue]init[/blue][/bold] [dim][white](v{__version__})[/white][/dim]")
+    log(f"[blue]  config      :[/blue] {config.config_path!s}")
+    log(f"[blue]  language    :[/blue] {config.stt.language or 'auto'}")
     log(f"[blue]  mode        :[/blue] {mode}")
     log(f"[blue]  model       :[/blue] {config.stt.model}")
     log(f"[blue]  output      :[/blue] {output}")
-    log(f"[blue]  language    :[/blue] {config.stt.language or 'auto'}")
-    log(f"[blue]  push-to-talk:[/blue] {config.ispeak.push_to_talk_key}")
-    log(f"[blue]  config      :[/blue] {config.config_path!s}\n")
+    log(f"[blue]  push-to-talk:[/blue] {config.ispeak.push_to_talk_key}\n")
 
     def handle_voice_text(text: str) -> None:
         """Handle transcribed text by typing it"""
