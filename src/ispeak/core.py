@@ -3,6 +3,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime
 from importlib.metadata import version
+from pathlib import Path
 from typing import Literal
 
 from pynput import keyboard
@@ -332,7 +333,10 @@ def runner(
         timestamp = datetime.now().isoformat(timespec="seconds")
         if config.ispeak.log_file:
             try:
-                with open(config.ispeak.log_file, "a", encoding="utf-8") as f:
+                log_path = Path(config.ispeak.log_file).expanduser()
+                if log_path.parent:
+                    log_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(log_path, "a", encoding="utf-8") as f:
                     f.write(f"## {timestamp}\n{text}\n\n")
             except Exception as e:
                 log_erro(f"writing to log file: {e}")
