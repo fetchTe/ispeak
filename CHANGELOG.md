@@ -1,3 +1,8 @@
+## [`v0.4.1`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.1) - `2025-09-18`
+
+### ▎Fixed
+- Plugin output
+
 ## [`v0.4.0`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.0) - `2025-09-11`
 
 ### ▎Added

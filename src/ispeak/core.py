@@ -226,9 +226,9 @@ class VoiceInput:
                     self._handle_delete_last()
                 else:
                     # store for potential deletion and send to callback
-                    self.last_input.append(raw_text)
+                    self.last_input.append(processed_text)
                     if self.on_text:
-                        self.on_text(raw_text)
+                        self.on_text(processed_text)
 
         except Exception as e:
             log_erro(f"Error during transcription: {e}")
