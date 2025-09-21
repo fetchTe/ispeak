@@ -162,7 +162,7 @@ class VoiceInput:
         self.listener = keyboard.GlobalHotKeys(hot_rec)
         self.listener.start()
 
-    def stop(self) -> None:
+    def stop(self, abort: bool = False) -> None:
         """Stop voice input system and cleanup resources"""
         self.active = False
 
@@ -173,7 +173,7 @@ class VoiceInput:
 
         # stop recording if active
         if self.recording:
-            self._stop_recording()
+            self._stop_recording(is_esc=abort)
 
         # shutdown recorder
         if self.recorder:
@@ -373,6 +373,8 @@ def runner(
         if not is_standalone:
             log_warn("Continuing without ispeak voice support...")
 
+    # abort on ctrl+c
+    abort_on_exit = False
     try:
         if is_standalone:
             # binary-less mode: just run voice input without subprocess
@@ -382,6 +384,7 @@ def runner(
                     while True:
                         time.sleep(10)
                 except KeyboardInterrupt:
+                    abort_on_exit = True
                     return_code = 0
                     print("")
             else:
@@ -392,6 +395,7 @@ def runner(
             return_code = result.returncode
 
     except KeyboardInterrupt:
+        abort_on_exit = True
         return_code = 0
         print("")
     except FileNotFoundError:
@@ -404,7 +408,7 @@ def runner(
         # clean up voice input
         if voice_enabled and voice_input:
             try:
-                voice_input.stop()
+                voice_input.stop(abort=abort_on_exit)
             except Exception:
                 pass  # ignore cleanup errors
 
