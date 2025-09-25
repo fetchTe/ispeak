@@ -1,6 +1,6 @@
 [project]
 name = "ispeak"
-version = "0.4.2"
+version = "0.4.3"
 requires-python = ">=3.11"
 description = "An inline speech-to-text CLI tool that works wherever you can type"
 readme = "README.md"

@@ -1,16 +1,36 @@
+## [`v0.4.3`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.3) - `2025-09-25`
+
+### ▎Added
+- `--version` flag
+- README demo gif
+
+
+### ▎Changed
+- Order initial startup meta alphabetical and display version
+
+
+### ▎Fixed
+- `log_file` check/create directory and `expanduser`
+- Post-shutown text generation on Ctrl+C
+
+
 ## [`v0.4.2`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.2) - `2025-09-18`
 
 ### ▎Fixed
 - Plugin output
+
+
 
 ## [`v0.4.0`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.0) - `2025-09-11`
 
 ### ▎Added
 - Configurable keyboard interval delay with `keyboard_interval` setting
 
+
 ### ▎Changed
 - 30x faster CLI `--help` performance
 - README initial prompt recommendation
+
 
 
 ## [`v0.2.5`](https://github.com/fetchTe/ispeak/releases/tag/v0.2.5) - `2025-09-10`
