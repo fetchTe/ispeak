@@ -2,7 +2,7 @@
 ispeak
 <img align="right" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" />
 <a href="https://mibecode.com">
-  <img align="right" title="≥95% Human Code" alt="≥95% Human Code" src="https://mibecode.com/badge.svg">
+  <img align="right" title="&#8805;95% Human Code" alt="&#8805;95% Human Code" src="https://mibecode.com/badge.svg" />
 </a>
 </h1>
 
@@ -21,7 +21,7 @@ An inline speech-to-text tool that works wherever you can type; [`vim`](https://
 
 <br />
 
-<img align="center" alt="ispeak-demo-short" src="https://raw.githubusercontent.com/fetchTe/ispeak/master/docs/ispeak-demo-short.gif">
+<img align="center" alt="ispeak-demo-short" src="https://raw.githubusercontent.com/fetchTe/ispeak/master/docs/ispeak-demo-short.gif" />
 
 
 ## Quick Start
@@ -90,7 +90,7 @@ ispeak -l words.log    # Log transcriptions to file
 # DEV/LOCAL USAGE
 uv run ispeak --setup  # via uv
 ```
-<br/>
+<br />
 
 
 
@@ -140,7 +140,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 > **NOTE**: Highly recommend using `ispeak --setup` for initial setup
 
 
-<br/>
+<br />
 
 
 ### ▎ `ispeak`
@@ -158,16 +158,16 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 - `recording_indicator` (str/null): Visual indicator typed when recording starts **must be a typeable**
 - `strip_whitespace` (bool): Remove extra whitespace from transcribed text
 
-> Hotkeys work via [pynput](https://github.com/moses-palmer/pynput) and support: <br/>
-> ╸ Simple characters: `a`, `b`, `c`, `1`, etc. <br/>
-> ╸ Special keys: `end`, `alt_l`, `ctrl_l` - (see [pynput Key class](https://github.com/moses-palmer/pynput/blob/74c5220a61fecf9eec0734abdbca23389001ea6b/lib/pynput/keyboard/_base.py#L162)) <br/>
-> ╸ Key combinations: `<ctrl>+<alt>+h`, `<shift>+<f1>`<br/>
-<br/>
+> Hotkeys work via [pynput](https://github.com/moses-palmer/pynput) and support: <br />
+> ╸ Simple characters: `a`, `b`, `c`, `1`, etc. <br />
+> ╸ Special keys: `end`, `alt_l`, `ctrl_l` - (see [pynput Key class](https://github.com/moses-palmer/pynput/blob/74c5220a61fecf9eec0734abdbca23389001ea6b/lib/pynput/keyboard/_base.py#L162)) <br />
+> ╸ Key combinations: `<ctrl>+<alt>+h`, `<shift>+<f1>`<br />
+<br />
 
 
 ### ▎`stt`
-> A full config reference can be found in [`./docs/stt-options.md`](https://github.com/fetchTe/ispeak/blob/master/docs/stt-options.md) <br/>
-> ╸ [`RealtimeSTT`](https://github.com/KoljaB/RealtimeSTT) handles the input/mic setup and processing <br/>
+> A full config reference can be found in [`./docs/stt-options.md`](https://github.com/fetchTe/ispeak/blob/master/docs/stt-options.md) <br />
+> ╸ [`RealtimeSTT`](https://github.com/KoljaB/RealtimeSTT) handles the input/mic setup and processing <br />
 > ╸ [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper) is the actual speech-to-text engine implementation
 
 - `model` (str): Model size or path to local CTranslate2 model (for English variants append `.en`)
@@ -201,7 +201,7 @@ Can be defined via [JSON](https://en.wikipedia.org/wiki/JSON) or [TOML](https://
 > **NOTE**: `initial_prompt` defines style and/or spelling, not instructions [cookbook](https://cookbook.openai.com/examples/whisper_prompting_guide#comparison-with-gpt-prompting)/[ref](https://platform.openai.com/docs/guides/speech-to-text/improving-reliability)
 
 
-<br/>
+<br />
 
 
 
@@ -252,11 +252,11 @@ Regex-based text replacement, mainly for simple string replacements, but also ca
   }
 }
 ```
-> **Flags**: Use `/pattern/flags` format (supports `i`, `m`, `s`, `x` flags) <br/>
-> **Substitution**: Use `\1`, `\2` or `\g<1>`, `\g<2>` syntax <br/>
-> **Tests**: [`./tests/test_plugin_replace.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_replace.py) <br/>
+> **Flags**: Use `/pattern/flags` format (supports `i`, `m`, `s`, `x` flags) <br />
+> **Substitution**: Use `\1`, `\2` or `\g<1>`, `\g<2>` syntax <br />
+> **Tests**: [`./tests/test_plugin_replace.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_replace.py) <br />
 
-<br/>
+<br />
 
 
 ### ▎ `num2text` 
@@ -281,10 +281,10 @@ Convert digits to text numbers, like "42" into "forty-two" via [`num2words`](htt
   }
 }
 ```
-> **Tests**: [`./tests/test_plugin_num2text.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_num2text.py)  <br/>
-> **Dependency**: [`num2words`](https://github.com/savoirfairelinux/num2words) -> `uv pip install num2words` <br/>
+> **Tests**: [`./tests/test_plugin_num2text.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_num2text.py)  <br />
+> **Dependency**: [`num2words`](https://github.com/savoirfairelinux/num2words) -> `uv pip install num2words` <br />
 
-<br/>
+<br />
 
 
 ### ▎ `text2num`
@@ -305,11 +305,11 @@ Convert text numbers to digits, like "forty-two" into "42" via [`text_to_num`](h
   }
 }
 ```
-> **Tests**: [`./tests/test_plugin_text2num.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_text2num.py)  <br/>
-> **Dependency**: [`text_to_num`](https://github.com/allo-media/text2num) -> `uv pip install text_to_num` <br/>
-> **IMPORTANT**: the `threshold` may, or, may not work if cardinal; check out the `TestWishyWashyThreshold` test for more dets<br/>
+> **Tests**: [`./tests/test_plugin_text2num.py`](https://github.com/fetchTe/ispeak/blob/master/tests/test_plugin_text2num.py)  <br />
+> **Dependency**: [`text_to_num`](https://github.com/allo-media/text2num) -> `uv pip install text_to_num` <br />
+> **IMPORTANT**: the `threshold` may, or, may not work if cardinal; check out the `TestWishyWashyThreshold` test for more dets<br />
 
-<br/>
+<br />
 
 
 
@@ -340,7 +340,7 @@ if __name__ == '__main__':
         print(f"Error: {e}")
 ```
 
-<br/>
+<br />
 
 
 
@@ -382,7 +382,7 @@ All listener classes have the additional attribute `IS_TRUSTED`, which is `True`
 ### ▎Windows
 Virtual events sent by *other* processes may not be received. This library takes precautions, however, to dispatch any virtual events generated to all currently running listeners of the current process.
 
-<br/>
+<br />
 
 
 
@@ -436,7 +436,7 @@ Virtual events sent by *other* processes may not be received. This library takes
 ```
 
 
-<br/>
+<br />
 
 
 
@@ -456,7 +456,7 @@ Virtual events sent by *other* processes may not be received. This library takes
 7. Push to your branch: `git push origin feature/amazing-feature`
 8. Open a Pull Request with a clear description of your changes
 
-<br/>
+<br />
 
 
 
@@ -468,7 +468,7 @@ Virtual events sent by *other* processes may not be received. This library takes
 - **[`whisper`](https://github.com/openai/whisper)** - The foundational speech-to-text recognition model
 
 
-<br/>
+<br />
 
 
 
