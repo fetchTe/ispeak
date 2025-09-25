@@ -19,6 +19,9 @@ An inline speech-to-text tool that works wherever you can type; [`vim`](https://
 + **Post-Transcribe Plugin Pipeline** - [Replace](#-replace), [text2num](#-text2num), and [num2text](#-num2text)
 + **Cross-Platform** - Works on [Linux](#linux)/[macOS](#macos)/[Windows](#windows) with GPU or CPU
 
+<br />
+
+<img align="center" alt="ispeak-demo-short" src="https://raw.githubusercontent.com/fetchTe/ispeak/master/docs/ispeak-demo-short.png">
 
 
 ## Quick Start
