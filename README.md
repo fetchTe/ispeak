@@ -1,4 +1,12 @@
-# ispeak
+<h1>
+ispeak
+<img align="right" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" />
+<a href="https://mibecode.com">
+  <img align="right" title="≥95% Human Code" alt="≥95% Human Code" src="https://mibecode.com/badge.svg">
+</a>
+</h1>
+
+
 
 A keyboard-centric inline speech-to-text tool that works wherever you can type; [`vim`](https://www.vim.org/), [`emacs`](https://www.gnu.org/software/emacs/), [`firefox`](https://www.firefox.com), and CLI/AI tools like [`aider`](https://github.com/paul-gauthier/aider), [`codex`](https://github.com/openai/codex), [`claude`](https://claude.ai/code), or whatever you fancy
 
@@ -15,7 +23,6 @@ A keyboard-centric inline speech-to-text tool that works wherever you can type; 
 
 ## Quick Start
 
-<img align="right" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" />
 
 1. **Run**: `ispeak` (add `-b <program>` to target a specific executable)
 2. **Activate**: Press the hotkey (default `shift_l`) - the 'recording indicator' is text-based (default `;`)
