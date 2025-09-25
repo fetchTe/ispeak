@@ -4,10 +4,11 @@
 
 ### ▎Notes
 
-To save you time and effort, two features of RealtimeSTT have been intentionally omitted
+To save you time and effort, two features of RealtimeSTT have been intentionally omitted:
 
-1. `wakeword*` is excluded in favor of a hotkey-driven workflow. While it is certainly possible to use the "wakeword," with a few minor changes, you'll regret it somewhere between the twentieth and umpteenth time you're forced to say it.
-2. `realtime*` is only practical for real-time applications, and even then, it's a novelty feature that is more or less pointless at the end of the day
+1. `wakeword*` is excluded in favor of a hotkey-driven workflow. While it's certainly possible to use a "wakeword" with a few minor tweaks, you'll regret it somewhere between the twentieth and umpteenth time you're forced to say it.
+2. `realtime*` <del>is only practical for real-time applications</del> - I've had a lot of shower thoughts about what you could do with it, but realistically, I don't think it's worth the hassle.
+
 
 
 ### ▎All `stt` Options
