@@ -21,7 +21,7 @@ An inline speech-to-text tool that works wherever you can type; [`vim`](https://
 
 <br />
 
-<img align="center" alt="ispeak-demo-short" src="https://raw.githubusercontent.com/fetchTe/ispeak/master/docs/ispeak-demo-short.png">
+<img align="center" alt="ispeak-demo-short" src="https://raw.githubusercontent.com/fetchTe/ispeak/master/docs/ispeak-demo-short.gif">
 
 
 ## Quick Start
