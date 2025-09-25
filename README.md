@@ -1,6 +1,7 @@
 <h1>
 ispeak
 <img align="right" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" />
+&nbsp;
 <a href="https://mibecode.com">
   <img align="right" title="&#8805;95% Human Code" alt="&#8805;95% Human Code" src="https://mibecode.com/badge.svg" />
 </a>
