@@ -1,4 +1,4 @@
-## [`v0.4.3`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.3) - `2025-09-25`
+## [`v0.4.4`](https://github.com/fetchTe/ispeak/releases/tag/v0.4.4) - `2025-09-25`
 
 ### ▎Added
 - `--version` flag
